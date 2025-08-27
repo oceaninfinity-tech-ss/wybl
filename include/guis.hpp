@@ -31,7 +31,7 @@ namespace sss::guis
          * @brief Generate GUIs
          * @param disallow_conflicts Do not allow dependencies or generated file to have conflicting output file name
          * @param flatten_dependency_references Whether to flatten dependency output files to just their filename (no directory hierarchy)
-         * @param debug_stream  A `std::ofstream` to write debug outputs to
+         * @param debug_stream A `std::ofstream` to write debug outputs to
          */
         void generate(bool const disallow_conflicts = true, bool const flatten_dependency_references = false, std::ostream const *debug_stream = nullptr);
     };

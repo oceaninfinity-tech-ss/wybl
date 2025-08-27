@@ -1,0 +1,88 @@
+import { structure_t } from "../structure";
+import { void_t } from "./void";
+import { widget_t } from "./widget";
+
+/**
+ * Widgets that are stored children of a layout
+ * @internal
+ */
+type subWidget_t = widget_t;
+
+/**
+ * A layout widget
+ */
+export class layout_t extends widget_t {
+    /**
+     * @internal
+     */
+    protected children!: subWidget_t[];
+    constructor() {
+        super("layout", "layout");
+        this.children = [];
+    };
+    public configuration(configuration: Object): void {
+        if (!this.configurationHas(configuration, "columns") ||
+            !Array.isArray((configuration as any).columns)) {
+            throw new Error("A layout needs a numeric set of columns");
+        }
+        if (!this.configurationHas(configuration, "rows") ||
+            !Array.isArray((configuration as any).rows)) {
+            throw new Error("A layout needs a numeric set of rows");
+        }
+        const columns: number[] = (configuration as any).columns;
+        const rows: number[] = (configuration as any).rows;
+        const columnsReduced: number = columns.reduce((a, b) => (a + b));
+        const rowsReduced: number = rows.reduce((a, b) => (a + b));
+        const maxItems: number = (columns.length * rows.length);
+        if (this.configurationHas(configuration, "items")) {
+            if (!Array.isArray((configuration as any).items)) {
+                throw new Error("A layout's items must be a list");
+            }
+            (configuration as any).items.forEach((item: any) => {
+                if (this.children.length == maxItems) {
+                    throw new Error("Attempting to add too many items to a layout (consider increasing `columns` or `rows`)");
+                }
+                if (!this.configurationHas(item, "object")) {
+                    throw new Error("Layout item has no reference to an object");
+                }
+                if (item.object === null) {
+                    this.children.push(new void_t());
+                } else {
+                    this.children.push(structure_t.widget(item.object));
+                }
+            });
+        } else {
+            console.warn("A layout has been created, but it has no `items`");
+            return;
+        }
+        this.content.style.setProperty("--columns", columns.map(column => {
+            if (column <= 0) {
+                throw new Error("A layout can only have a column with a size of more than 0");
+            }
+            return (((column / columnsReduced) * 100).toString() + "%");
+        }).join(" "));
+        this.content.style.setProperty("--rows", rows.map(row => {
+            if (row <= 0) {
+                throw new Error("A layout can only have a row with a size of more than 0");
+            }
+            return (((row / rowsReduced) * 100).toString() + "%");
+        }).join(" "));
+        // Fill the remaining cells...
+        for (let i = this.children.length; i < maxItems; i++) {
+            this.children.push(new void_t());
+        }
+    }
+    public render(): HTMLElement {
+        this.children.forEach(child => {
+            try {
+                this.content.appendChild(child.render());
+            } catch (error) {
+                if (error instanceof RangeError) {
+                    throw new Error("Failed to render layout (it is possible that a child item may be recursive)");
+                }
+                throw error;
+            }
+        });
+        return this.content;
+    };
+};

@@ -59,9 +59,10 @@ namespace sss::guis
         /**
          * @brief Generates a GUI
          * @param gui The GUI to generate
-         * @param debug_stream  A `std::ofstream` to write debug outputs to
+         * @param guis_js_path The path to the main JavaScript file
+         * @param debug_stream A `std::ofstream` to write debug outputs to
          */
-        void generate(gui_t const &gui, std::ostream const *debug_stream = nullptr);
+        void generate(gui_t const &gui, std::string const &guis_js_path, std::ostream const *debug_stream = nullptr);
         /**
          * @brief Generate a unique filename against the dependencies with a specified extension
          * @param extension The extension to use for the unique file
@@ -84,7 +85,7 @@ namespace sss::guis
          * @brief Build all GUIs and manage dependencies
          * @param disallow_conflicts Do not allow dependencies or generated file to have conflicting output file name
          * @param flatten_dependency_references Whether to flatten dependency output files to just their filename (no directory hierarchy)
-         * @param debug_stream  A `std::ofstream` to write debug outputs to
+         * @param debug_stream A `std::ofstream` to write debug outputs to
          */
         void build_all(bool const disallow_conflicts = true, bool const flatten_dependency_references = false, std::ostream const *debug_stream = nullptr);
     };

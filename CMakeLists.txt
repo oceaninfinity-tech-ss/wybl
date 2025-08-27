@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 set(PROJECT_NAME sss-guis)
 
-project(${PROJECT_NAME} LANGUAGES CXX VERSION 0.0.0)
+project(${PROJECT_NAME} LANGUAGES CXX VERSION 0.1.0)
 
 set(EXECUTABLE_NAME ${PROJECT_NAME}_executable)
 set(LIBRARY_NAME ${PROJECT_NAME}_library)
@@ -11,6 +11,8 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 
 find_package(yaml-cpp REQUIRED)
 find_package(nlohmann_json REQUIRED)
+
+add_subdirectory(js EXCLUDE_FROM_ALL)
 
 set(SOURCES src/dependencies.cpp
             src/generation.cpp
@@ -38,9 +40,12 @@ elseif (NOT(BUILD_EXECUTABLE))
     message(FATAL_ERROR "Nothing is configured to be build for ${PROJECT_NAME}")
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include
+                    ${SSS-GUIS-JS-HEADER})
 
-target_link_libraries(${LIBRARY_NAME} PRIVATE yaml-cpp nlohmann_json::nlohmann_json)
+target_link_libraries(${LIBRARY_NAME} PRIVATE yaml-cpp
+                                              nlohmann_json::nlohmann_json
+                                              sss-guis-js)
 
 target_compile_options(${LIBRARY_NAME} PRIVATE -Wall
                                                -Wextra

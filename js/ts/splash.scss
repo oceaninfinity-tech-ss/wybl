@@ -1,0 +1,31 @@
+$side-margin: 5em;
+
+div {
+    min-width: calc(100% - ($side-margin * 2));
+    min-height: calc(100% - ($side-margin * 2));
+    max-width: calc(100% - ($side-margin * 2));
+    max-height: calc(100% - ($side-margin * 2));
+    margin: $side-margin auto auto;
+    align-items: center;
+    background-color: white;
+    box-shadow: 0 0 1.5em 2em #fff;
+    border-radius: 1em;
+
+    & * {
+        display: block;
+        text-align: center;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    & h1 {
+        font-size: 6em;
+        font-weight: bold;
+    }
+
+    & p {
+        max-width: 80%;
+        margin: auto;
+        font-family: monospace;
+        color: darkslategray;
+    }
+}

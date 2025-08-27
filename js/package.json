@@ -1,0 +1,19 @@
+{
+  "name": "gui",
+  "version": "0.0.0",
+  "scripts": {
+    "build-debug": "webpack --mode development",
+    "build-release": "webpack --mode production"
+  },
+  "description": "SSS GUI",
+  "devDependencies": {
+    "raw-loader": "^4.0.2",
+    "sass": "^1.90.0",
+    "sass-loader": "^16.0.5",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.9.2",
+    "typescript-declaration-webpack-plugin": "^0.3.0",
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1"
+  }
+}

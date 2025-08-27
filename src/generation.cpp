@@ -1,5 +1,6 @@
 #include "dependencies.hpp"
 #include "generation.hpp"
+#include "guis.js.hpp" // Generated file
 #include "structure.hpp"
 
 #include <algorithm>
@@ -237,7 +238,7 @@ generation_t::~generation_t()
     m_dependencies.clear();
 }
 
-void generation_t::generate(generation_t::gui_t const &data, std::ostream const *debug_stream)
+void generation_t::generate(generation_t::gui_t const &data, std::string const &guis_js_path, std::ostream const *debug_stream)
 {
     std::string structure;
     try
@@ -261,7 +262,7 @@ void generation_t::generate(generation_t::gui_t const &data, std::ostream const 
     };
 
     // Generate HTML
-    std::string html = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>SSS</title><script type=\"text/javascript\">const gui=" + gui_info.dump() + ";</script></head><body></body></html>";
+    std::string html = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>SSS</title><script type=\"text/javascript\">const gui=" + gui_info.dump() + ";</script><script type=\"text/javascript\" src=\"/" + guis_js_path + "\"></script></head><body></body></html>";
 
     /**
      * @brief Write contents to a file
@@ -377,11 +378,19 @@ void generation_t::build_all(bool const disallow_conflicts, bool const flatten_d
             m_dependencies.erase(disallowedDependency);
     }
 
+    // Write GUI JavaScript file
+    std::string guis_js_filename = unique_filename("js");
+    std::ofstream guis_js_stream(m_output_directory / guis_js_filename, std::ios::binary | std::ios::out);
+    if (!guis_js_stream.is_open())
+        throw std::runtime_error("Failed to create a file for writing output content to");
+    guis_js_stream.write(reinterpret_cast<const char *>(sss_guis_js), sss_guis_js_len);
+    guis_js_stream.close();
+
     // Parallel processing loop
     std::vector<std::future<void>> futures;
     for (const auto &gui_data : m_guis)
-        futures.push_back(std::async(std::launch::async, [this, gui_data, debug_stream]()
-                                     { generate(gui_data, debug_stream); })); // Launch asynchronously
+        futures.push_back(std::async(std::launch::async, [this, gui_data, guis_js_filename, debug_stream]()
+                                     { generate(gui_data, guis_js_filename, debug_stream); })); // Launch asynchronously
 
     // Wait for all threads to complete
     for (auto &future : futures)
