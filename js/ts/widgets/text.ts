@@ -1,4 +1,4 @@
-import { widget_t } from "./widget";
+import { widget_t, widgetDefineBaseType } from "./widget";
 
 /**
  * A textual widget used to show text
@@ -20,3 +20,5 @@ export class text_t extends widget_t {
         return this.content;
     };
 };
+
+widgetDefineBaseType("text", "span");

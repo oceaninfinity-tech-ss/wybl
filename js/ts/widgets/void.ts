@@ -1,4 +1,4 @@
-import { widget_t } from "./widget";
+import { widget_t, widgetDefineBaseType } from "./widget";
 
 /**
  * A purposely blank widget to fill space
@@ -22,3 +22,5 @@ export class void_t extends widget_t {
         return this.content;
     };
 };
+
+widgetDefineBaseType("nothing", "div");
