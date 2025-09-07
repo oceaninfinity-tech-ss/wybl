@@ -1,4 +1,4 @@
-import { widget_t, widgetDefineBaseType } from "./widget";
+import { widget_t } from "./widget";
 
 /**
  * A purposely blank widget to fill space
@@ -8,7 +8,7 @@ export class void_t extends widget_t {
      * Construct a void widget
      */
     constructor() {
-        super("nothing", "void");
+        super("div", "void");
         this.content.innerText;
         const shadowRoot = this.content.attachShadow({ "mode": "closed" });
         const noDisplayStyling: CSSStyleSheet = new CSSStyleSheet();
@@ -22,5 +22,3 @@ export class void_t extends widget_t {
         return this.content;
     };
 };
-
-widgetDefineBaseType("nothing", "div");

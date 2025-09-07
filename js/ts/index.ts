@@ -3,13 +3,9 @@ import splashStyling from "./splash.scss";
 
 import { gui_t } from "./gui";
 import { structure_t } from "./structure";
-import { container_t } from "./widgets/container";
-import { layout_t } from "./widgets/layout";
-import { text_t } from "./widgets/text";
-import { tabs_t } from "./widgets/tabs";
-import { void_t } from "./widgets/void";
 import { widget_t } from "./widgets/widget";
 import { loadStylesheet } from "./resources/stylesheet";
+import { registerCoreWidgets } from "./widgets";
 
 /**
  * @internal
@@ -34,6 +30,7 @@ function main(): Promise<void> {
     splashContent.appendChild(splashStatus);
     splashShadowRoot.appendChild(splashContent);
     document.body = splashContainer;
+    registerCoreWidgets();
     return new Promise<void>(async (resolve, reject) => {
         // Load GUI
         let gui_data: (gui_t | null) = null;
@@ -43,12 +40,6 @@ function main(): Promise<void> {
             setError(error as string);
             reject();
         }
-        // Configure widgets
-        structure_t.declareWidget("null", (): widget_t => { return new void_t() });
-        structure_t.declareWidget("layout", (): widget_t => { return new layout_t() });
-        structure_t.declareWidget("container", (): widget_t => { return new container_t() });
-        structure_t.declareWidget("tabs", (): widget_t => { return new tabs_t() });
-        structure_t.declareWidget("text", (): widget_t => { return new text_t() });
         // Load layouts
         await Promise.all([structure_t.generate(gui_data!.structure), loadStylesheet(gui_data!.stylesheet)]).then((main: (void | widget_t)[]) => {
             if (main[0] instanceof widget_t) {

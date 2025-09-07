@@ -1,6 +1,6 @@
 import { structure_t } from "../structure";
 import { void_t } from "./void";
-import { widget_t, widgetDefineBaseType } from "./widget";
+import { widget_t } from "./widget";
 
 /**
  * Widgets that are stored children of a layout
@@ -17,7 +17,7 @@ export class layout_t extends widget_t {
      */
     protected children!: subWidget_t[];
     constructor() {
-        super("layout", "layout");
+        super("div", "layout");
         this.children = [];
     };
     public configuration(configuration: Object): void {
@@ -86,5 +86,3 @@ export class layout_t extends widget_t {
         return this.content;
     };
 };
-
-widgetDefineBaseType("layout", "div");

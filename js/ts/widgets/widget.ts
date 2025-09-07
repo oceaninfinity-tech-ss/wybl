@@ -1,18 +1,3 @@
-let baseTypes: { [key: string]: string } = {};
-
-/**
- * Define a base widget type to be used by widgets
- * @param {string} baseTypeName The name of a base type
- * @param {string} baseType The base HTML element type
- */
-export function widgetDefineBaseType(baseTypeName: string, baseType: string): void {
-    if (!(baseTypeName in baseTypes)) {
-        baseTypes[baseTypeName] = baseType;
-    } else {
-        throw new Error(`A base widget type was not defined as it conflicts with another base type of "${baseTypeName}"`);
-    }
-}
-
 /**
  * @abstract Base widget class
  */
@@ -27,13 +12,14 @@ export abstract class widget_t {
      * @param {string} type The type of the widget
      */
     constructor(baseType: string, type: string) {
-        if (!(baseType in baseTypes)) {
+        try {
+            this.content = document.createElement(baseType);
+        } catch {
             throw new Error(`Unknown widget base type: ${baseType}`);
         }
         if (type.trim().length == 0) {
             throw new Error("Widget type is not defined");
         }
-        this.content = document.createElement(baseTypes[baseType]);
         this.content.className = type;
     }
     /**

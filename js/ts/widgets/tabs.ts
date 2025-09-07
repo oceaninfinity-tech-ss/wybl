@@ -19,7 +19,7 @@ export class tabs_t extends widget_t {
     protected tabs!: { [key: string]: subWidget_t };
     protected position!: tabsPosition_t;
     constructor() {
-        super("layout", "tabs");
+        super("div", "tabs");
         this.tabs = {};
         this.position = "top";
     };

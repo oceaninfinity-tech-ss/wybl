@@ -1,5 +1,5 @@
 import { structure_t } from "../structure";
-import { widget_t, widgetDefineBaseType } from "./widget";
+import { widget_t } from "./widget";
 
 /**
  * A container widget
@@ -14,7 +14,7 @@ export class container_t extends widget_t {
      */
     protected title!: string;
     constructor() {
-        super("container", "container");
+        super("fieldset", "container");
     };
     public configuration(configuration: Object): void {
         if (this.configurationHas(configuration, "title")) {
@@ -40,5 +40,3 @@ export class container_t extends widget_t {
         return this.content;
     }
 };
-
-widgetDefineBaseType("container", "fieldset");

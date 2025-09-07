@@ -1,4 +1,4 @@
-import { widget_t, widgetDefineBaseType } from "./widget";
+import { widget_t } from "./widget";
 
 /**
  * A textual widget used to show text
@@ -8,7 +8,7 @@ export class text_t extends widget_t {
      * Construct a text widget
      */
     constructor() {
-        super("text", "text");
+        super("span", "text");
     };
     public configuration(configuration: Object): void {
         if (!this.configurationHas(configuration, "text")) {
@@ -20,5 +20,3 @@ export class text_t extends widget_t {
         return this.content;
     };
 };
-
-widgetDefineBaseType("text", "span");
