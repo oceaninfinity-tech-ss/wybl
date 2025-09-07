@@ -17,7 +17,7 @@ interface structure_schema_t {
      * @variation Array Is expected by default
      * @variation Object Is expected for debug variants
      */
-    widgets: structure_widget_schema_t[] | {[key: string]: structure_widget_schema_t};
+    widgets: structure_widget_schema_t[] | { [key: string]: structure_widget_schema_t };
     /**
      * Types of widgets that are used by the structure
      */
@@ -44,6 +44,11 @@ enum widgetData_t {
      */
     widgetDataConfiguration = 1,
 }
+
+/**
+ * @brief The type of a widget reference identifier
+ */
+export type widgetIdentifier_t = (string | number);
 
 /**
  * Manage structural widgets
@@ -98,10 +103,13 @@ export abstract class structure_t {
     }
     /**
      * Get a widget
-     * @param {number | string} identifier Reference to a widget
+     * @param {widgetIdentifier_t} identifier Reference to a widget
      * @returns {widget_t} Widget
      */
-    public static widget(identifier: number | string): widget_t {
+    public static widget(identifier: widgetIdentifier_t): widget_t {
+        if (!this.widgetExists(identifier)) {
+            throw new Error(`No widget exists with the identifier "${identifier}"`);
+        }
         // @ts-ignore - to allow either a number or a string to be an index
         let type: string = this.structure.types[this.structure.widgets[identifier][widgetData_t.widgetDataType]];
         if (!(type in this.widgetDeclarations)) {
@@ -111,6 +119,23 @@ export abstract class structure_t {
         // @ts-ignore - to allow either a number or a string to be an index
         widget.configuration(this.structure.widgets[identifier][widgetData_t.widgetDataConfiguration] || {});
         return widget;
+    }
+    /**
+     * Check whether a widget exists
+     * @param {widgetIdentifier_t} identifier Reference to a widget
+     * @returns {boolean} Whether a widget exist
+     */
+    public static widgetExists(identifier: widgetIdentifier_t): boolean {
+        if (Array.isArray(this.structure.widgets)) {
+            if (typeof identifier != "number") {
+                throw new Error(`Unable to check if the widget "${identifier}" exists as a numeric identifier was expected`);
+            }
+            return (identifier >= 0 && identifier < this.structure.widgets.length);
+        } else if (typeof identifier != "string") {
+            throw new Error(`Unable to check if the widget "${identifier}" exists as a string identifier was expected`);
+        } else {
+            return this.structure.widgets.hasOwnProperty(identifier);
+        }
     }
     /**
      * Get the structure of the GUI
