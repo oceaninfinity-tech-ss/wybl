@@ -6,6 +6,7 @@ import { structure_t } from "./structure";
 import { container_t } from "./widgets/container";
 import { layout_t } from "./widgets/layout";
 import { text_t } from "./widgets/text";
+import { tabs_t } from "./widgets/tabs";
 import { void_t } from "./widgets/void";
 import { widget_t } from "./widgets/widget";
 import { loadStylesheet } from "./resources/stylesheet";
@@ -46,6 +47,7 @@ function main(): Promise<void> {
         structure_t.declareWidget("null", (): widget_t => { return new void_t() });
         structure_t.declareWidget("layout", (): widget_t => { return new layout_t() });
         structure_t.declareWidget("container", (): widget_t => { return new container_t() });
+        structure_t.declareWidget("tabs", (): widget_t => { return new tabs_t() });
         structure_t.declareWidget("text", (): widget_t => { return new text_t() });
         // Load layouts
         await Promise.all([structure_t.generate(gui_data!.structure), loadStylesheet(gui_data!.stylesheet)]).then((main: (void | widget_t)[]) => {
