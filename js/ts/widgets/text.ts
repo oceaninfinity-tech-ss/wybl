@@ -16,7 +16,9 @@ export class text_t extends widget_t {
         }
         this.content.innerText = (configuration as any).text as string;
     }
-    public render(): HTMLElement {
-        return this.content;
+    public render(): Promise<HTMLElement> {
+        return new Promise<HTMLElement>((resolve, _reject) => {
+            resolve(this.content);
+        });
     };
 };

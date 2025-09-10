@@ -72,17 +72,20 @@ export class layout_t extends widget_t {
             this.children.push(new void_t());
         }
     }
-    public render(): HTMLElement {
-        this.children.forEach(child => {
+    public render(): Promise<HTMLElement> {
+        return new Promise<HTMLElement>(async (resolve, reject) => {
             try {
-                this.content.appendChild(child.render());
+                for (const child of this.children) {
+                    const object: HTMLElement = await child.render();
+                    this.content.appendChild(object);
+                }
+                resolve(this.content);
             } catch (error) {
                 if (error instanceof RangeError) {
-                    throw new Error("Failed to render layout (it is possible that a child item may be recursive)");
+                    reject("Failed to render layout (it is possible that a child item may be recursive)");
                 }
-                throw error;
+                reject(error);
             }
         });
-        return this.content;
-    };
+    }
 };

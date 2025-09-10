@@ -18,7 +18,9 @@ export class void_t extends widget_t {
     public configuration(_configuration: Object): void {
         return;
     }
-    public render(): HTMLElement {
-        return this.content;
+    public render(): Promise<HTMLElement> {
+        return new Promise<HTMLElement>((resolve, _reject) => {
+            resolve(this.content);
+        });
     };
 };

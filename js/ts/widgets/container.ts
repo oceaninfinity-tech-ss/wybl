@@ -32,11 +32,21 @@ export class container_t extends widget_t {
             throw new Error("A container has no reference to an object");
         }
     }
-    public render(): HTMLElement {
+    public render(): Promise<HTMLElement> {
         const legend: HTMLLegendElement = document.createElement("legend");
         legend.textContent = this.title;
         this.content.appendChild(legend);
-        this.content.appendChild(this.object.render());
-        return this.content;
+        return new Promise<HTMLElement>(async (resolve, reject) => {
+            try {
+                const object: HTMLElement = await this.object.render();
+                this.content.appendChild(object);
+                resolve(this.content);
+            } catch (error) {
+                if (error instanceof RangeError) {
+                    reject("Failed to render container (it is possible that a child item may be recursive)");
+                }
+                reject(error);
+            }
+        });
     }
 };

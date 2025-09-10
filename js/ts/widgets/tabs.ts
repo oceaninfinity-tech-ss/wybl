@@ -73,43 +73,45 @@ export class tabs_t extends widget_t {
             } while (false);
         }
     }
-    public render(): HTMLElement {
-        this.content.style.setProperty("--position", this.position);
-        const tabButtonContainer: HTMLDivElement = document.createElement("div");
-        let tabButtons: HTMLButtonElement[] = [];
-        const tabView: HTMLDivElement = document.createElement("div");
-        let firstTab: boolean = true;
-        Object.keys(this.tabs).forEach((tab: string) => {
-            const tabButton: HTMLButtonElement = document.createElement("button");
-            tabButton.innerText = tab;
-            tabButtons.push(tabButton);
-            tabButtonContainer.appendChild(tabButton);
+    public render(): Promise<HTMLElement> {
+        return new Promise<HTMLElement>(async (resolve, reject) => {
+            this.content.style.setProperty("--position", this.position);
+            const tabButtonContainer: HTMLDivElement = document.createElement("div");
+            const tabView: HTMLDivElement = document.createElement("div");
+            const tabButtons: HTMLButtonElement[] = [];
+            let firstTab: boolean = true;
             try {
-                const tabObject: HTMLElement = this.tabs[tab].render();
-                tabButton.addEventListener("click", () => {
-                    if (tabView.firstElementChild != tabObject) {
-                        tabView.replaceChildren(tabObject);
-                    }
-                    tabButtons.forEach((button: HTMLButtonElement) => {
-                        if (button != tabButton) {
-                            button.removeAttribute("active");
+                for (const tab of Object.keys(this.tabs)) {
+                    const tabButton: HTMLButtonElement = document.createElement("button");
+                    tabButton.innerText = tab;
+                    tabButtons.push(tabButton);
+                    tabButtonContainer.appendChild(tabButton);
+                    const tabObject: HTMLElement = await this.tabs[tab].render();
+                    tabButton.addEventListener("click", () => {
+                        if (tabView.firstElementChild !== tabObject) {
+                            tabView.replaceChildren(tabObject);
                         }
+                        tabButtons.forEach((button: HTMLButtonElement) => {
+                            if (button !== tabButton) {
+                                button.removeAttribute("active");
+                            }
+                        });
+                        tabButton.setAttribute("active", "");
                     });
-                    tabButton.setAttribute("active", "");
-                });
-                if (firstTab) {
-                    tabButton.click();
-                    firstTab = false;
+                    if (firstTab) {
+                        tabButton.click();
+                        firstTab = false;
+                    }
                 }
+                this.content.appendChild(tabButtonContainer);
+                this.content.appendChild(tabView);
+                resolve(this.content);
             } catch (error) {
                 if (error instanceof RangeError) {
-                    throw new Error("Failed to render tabs (it is possible that a child item may be recursive)");
+                    reject("Failed to render tabs (it is possible that a child item may be recursive)");
                 }
-                throw error;
+                reject(error);
             }
         });
-        this.content.appendChild(tabButtonContainer);
-        this.content.appendChild(tabView);
-        return this.content;
-    };
+    }
 };

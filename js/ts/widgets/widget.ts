@@ -31,7 +31,7 @@ export abstract class widget_t {
      * @abstract Render a widget
      * @returns {HTMLElement}
      */
-    public abstract render(): HTMLElement;
+    public abstract render(): Promise<HTMLElement>;
     /**
      * Whether a configuration has an entity
      * @param {Object} configuration Configuration to check against

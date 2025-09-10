@@ -43,14 +43,20 @@ function main(): Promise<void> {
         // Load layouts
         await Promise.all([structure_t.generate(gui_data!.structure), loadStylesheet(gui_data!.stylesheet)]).then((main: (void | widget_t)[]) => {
             if (main[0] instanceof widget_t) {
-                const mainElement: HTMLElement = main[0].render();
-                while (document.body.children.length > 0) {
-                    document.body.removeChild(document.body.children[0]);
-                }
-                document.documentElement.replaceChild(document.createElement("body"), splashContainer);
-                document.body.appendChild(mainElement);
-                document.title = gui_data!.name.trim() + " | SSS";
-                resolve();
+                splashStatus.innerText = "Rending layout...";
+                main[0].render().then((mainElement: HTMLElement) => {
+                    while (document.body.children.length > 0) {
+                        document.body.removeChild(document.body.children[0]);
+                    }
+                    document.documentElement.replaceChild(document.createElement("body"), splashContainer);
+                    document.body.appendChild(mainElement);
+                    document.title = gui_data!.name.trim() + " | SSS";
+                    resolve();
+
+                }).catch((error) => {
+                    setError(error);
+                    reject();
+                });
             }
         }).catch((error) => {
             setError(error);
