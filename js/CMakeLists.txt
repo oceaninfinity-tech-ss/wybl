@@ -43,13 +43,13 @@ endif()
 
 add_custom_command(COMMAND npm run build-${CMAKE_BUILD_MODE}
                    OUTPUT ${GENERATED_JS}
-                   COMMENT "Generating webpack JavaScript bundle"
+                   COMMENT "Generating JavaScript bundle"
                    WORKING_DIRECTORY "${WORKING_DIRECTORY_LOCATION}")
 add_custom_command(COMMAND ${CMAKE_COMMAND} -E make_directory "${GENERATED_INCLUDE_DIRECTORY}/"
                    COMMAND xxd -i -n "${PROJECT_NAME}" "${GENERATED_JS}" > "${GENERATED_HEADER}"
                    OUTPUT ${GENERATED_HEADER}
                    WORKING_DIRECTORY "${WORKING_DIRECTORY_LOCATION}"
-                   COMMENT "Converting webpack JavaScript bundle into embeddable string"
+                   COMMENT "Converting JavaScript bundle into embeddable string"
                    DEPENDS "${GENERATED_JS}")
 
 add_library(${PROJECT_NAME} INTERFACE ${GENERATED_HEADER})

@@ -5,7 +5,6 @@ import { gui_t } from "./gui";
 import { structure_t } from "./structure";
 import { widget_t } from "./widgets/widget";
 import { loadStylesheet } from "./resources/stylesheet";
-import { registerCoreWidgets } from "./widgets";
 
 /**
  * @internal
@@ -30,7 +29,6 @@ function main(): Promise<void> {
     splashContent.appendChild(splashStatus);
     splashShadowRoot.appendChild(splashContent);
     document.body = splashContainer;
-    registerCoreWidgets();
     return new Promise<void>(async (resolve, reject) => {
         // Load GUI
         let gui_data: (gui_t | null) = null;
