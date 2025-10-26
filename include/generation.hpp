@@ -39,6 +39,7 @@ namespace sss::guis
              * @brief Output file path of generated structure
              */
             std::string structure_file;
+            std::vector<std::string> module_files;
         };
         /**
          * @brief Collection of all GUI's data

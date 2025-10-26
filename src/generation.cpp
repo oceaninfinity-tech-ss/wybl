@@ -18,6 +18,16 @@ using namespace sss::guis;
 namespace
 {
     /**
+     * @brief Check if a string is empty
+     * @param string The string to check
+     * @returns Whether the string is empty
+     */
+    bool is_empty(std::string const &string)
+    {
+        return std::all_of(string.begin(), string.end(), [](unsigned char character)
+                           { return std::isspace(character); });
+    }
+    /**
      * @brief Checks if a filepath is a descendant of another filepath
      * @param parent Filepath
      * @param child Filepath
@@ -98,6 +108,24 @@ namespace
     {
         return std::filesystem::relative(std::filesystem::absolute(target_path), base_path);
     }
+
+    /**
+     * @brief Calculates the amount of directories that a name would span into
+     * @param name The name to calculate against
+     * @return Directory depth count
+     */
+    int name_as_path_depth(const std::string &name)
+    {
+        std::filesystem::path name_path(name);
+        int count = (std::distance(name_path.begin(), name_path.end()) - 1);
+        if (name_path.has_root_directory())
+            count--;
+        if (name_path.has_root_name() && !name_path.has_root_directory())
+            count--;
+        if (count < 0)
+            count = 0;
+        return count;
+    }
 }
 
 generation_t::generation_t(std::filesystem::path const &configuration_file, std::filesystem::path const &output_directory)
@@ -144,6 +172,8 @@ generation_t::generation_t(std::filesystem::path const &configuration_file, std:
 
         // Store name of GUI
         current_gui_data.name = gui_node["name"].as<std::string>();
+        if (is_empty(current_gui_data.name))
+            throw std::runtime_error("A name must not be empty");
 
         // Store configuration filepath of GUI
         current_gui_data.source_configuration_file = gui_node["config"].as<std::string>();
@@ -184,9 +214,43 @@ generation_t::generation_t(std::filesystem::path const &configuration_file, std:
                 throw std::runtime_error("Unable to parse `debug` since a boolean value is expected");
             } while (false);
         }
+        // Check whether modules are listed
+        current_gui_data.module_files = {};
+        if (gui_node["modules"].IsDefined())
+        {
+            // Expect a list of modules
+            if (gui_node["modules"].IsSequence())
+            {
+                // Get the directory of the file being processed
+                for (const YAML::Node &dep_node : gui_node["modules"])
+                {
+                    if (!dep_node.IsScalar())
+                        throw std::runtime_error("Expected a string path for a module in `" + configuration_file.string() + "`");
+
+                    // Convert the dependency string to a std::filesystem::path object
+                    std::filesystem::path module_path;
+                    try
+                    {
+                        module_path = convert_relative_path_to_absolute(dep_node.as<std::string>(), configuration_file);
+                    }
+                    catch (const YAML::BadConversion &e)
+                    {
+                        throw std::runtime_error("Expected a string path for a module in `" + configuration_file.string() + "`");
+                    }
+                    if (std::filesystem::exists(module_path) && std::filesystem::is_regular_file(module_path))
+                    {
+                        std::filesystem::path module_path_relative = convert_absolute_path_to_relative(module_path, m_configuration_directory);
+                        m_dependencies[module_path.lexically_relative(m_configuration_directory)] = module_path_relative;
+                        current_gui_data.module_files.push_back(module_path_relative);
+                    }
+                    else
+                        throw std::runtime_error("No module file exists at `" + module_path.string() + "`");
+                }
+            }
+        }
 
         // Check whether dependencies are listed
-        if (!gui_node["dependencies"].IsDefined())
+        if (gui_node["dependencies"].IsDefined())
         {
             // Expect a list of dependencies
             if (gui_node["dependencies"].IsSequence())
@@ -201,7 +265,7 @@ generation_t::generation_t(std::filesystem::path const &configuration_file, std:
                     std::string dependency_path;
                     try
                     {
-                        std::string dependency_path = convert_relative_path_to_absolute(dep_node.as<std::string>(), configuration_file);
+                        dependency_path = convert_relative_path_to_absolute(dep_node.as<std::string>(), configuration_file);
                     }
                     catch (const YAML::BadConversion &e)
                     {
@@ -254,15 +318,31 @@ void generation_t::generate(generation_t::gui_t const &data, std::string const &
     // Structure output filepath
     std::string const structure_file = unique_filename("json");
 
+    std::string const relative_adjustment = [&]
+    {
+        std::string parent_path;
+        for (auto i = 0; i < name_as_path_depth(data.name); ++i)
+            parent_path += "../";
+        return parent_path;
+    }();
+
+    std::vector<std::string>
+        modules;
+    std::transform(data.module_files.begin(), data.module_files.end(), std::back_inserter(modules),
+                   [relative_adjustment](const std::string &module_file)
+                   {
+                       return relative_adjustment + module_file;
+                   });
+
     // GUI JSON object
     nlohmann::json gui_info = {
         {"name", data.name},
-        {"structure", "/" + structure_file},
-        {"stylesheet", data.stylesheet_file},
-    };
+        {"structure", relative_adjustment + structure_file},
+        {"stylesheet", relative_adjustment + data.stylesheet_file},
+        {"modules", modules}};
 
     // Generate HTML
-    std::string html = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>SSS</title><script type=\"text/javascript\">const gui=" + gui_info.dump() + ";</script><script type=\"text/javascript\" src=\"/" + guis_js_path + "\"></script></head><body></body></html>";
+    std::string html = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>SSS</title><script type=\"text/javascript\">const gui=" + gui_info.dump() + ";</script><script type=\"text/javascript\" src=\"/" + guis_js_path + "\"></script></head><body><noscript>Browser not supported: JavaScript required!</noscript></body></html>";
 
     /**
      * @brief Write contents to a file
@@ -271,6 +351,7 @@ void generation_t::generate(generation_t::gui_t const &data, std::string const &
      */
     std::function<void(std::string, std::string)> write_file = [](std::string const &filepath, std::string const &content) -> void
     {
+        std::filesystem::create_directories(std::filesystem::path(filepath).parent_path());
         std::ofstream file(filepath);
         if (!file)
             throw std::runtime_error("Failed to open file for writing: " + filepath);
@@ -297,9 +378,19 @@ std::filesystem::path generation_t::unique_filename(std::string const &extension
     {
         std::string filename = std::to_string(std::rand()) + '.' + extension;
         bool unique = true;
+        // Check against dependencies
         for (auto &&dependency : m_dependencies)
         {
             if (filename == dependency.second.filename())
+            {
+                unique = false;
+                break;
+            }
+        }
+        // Check against stylesheets
+        for (auto &&gui : m_guis)
+        {
+            if (filename == std::filesystem::path(gui.stylesheet_file).filename())
             {
                 unique = false;
                 break;
@@ -349,16 +440,20 @@ void generation_t::build_all(bool const disallow_conflicts, bool const flatten_d
         {
             // Sort dependency filenames for faster finding...
             std::sort(dependency_filenames.begin(), dependency_filenames.end(), [](const std::filesystem::path &a, const std::filesystem::path &b)
-            { return a.filename().string() < b.filename().string(); });
+                      { return a.filename().string() < b.filename().string(); });
 
-            //Check if output dependencies will conflict with each other when filenames are flattened
+            // Check if output dependencies will conflict with each other when filenames are flattened
             auto duplicate = std::adjacent_find(dependency_filenames.begin(), dependency_filenames.end(), [](const std::filesystem::path &a, const std::filesystem::path &b)
                                                 { return a.filename().string() == b.filename().string(); });
             if (duplicate != dependency_filenames.end())
                 throw std::runtime_error("Conflicting filename of `" + duplicate->filename().string() + "` between flattened dependencies");
-            // Flatten output stylesheet paths
+            // Flatten output stylesheet and module paths
             for (auto &&gui : m_guis)
+            {
                 gui.stylesheet_file = std::filesystem::path(gui.stylesheet_file).filename().string();
+                for (auto &&module_file : gui.module_files)
+                    module_file = std::filesystem::path(module_file).filename().string();
+            }
         }
     }
 

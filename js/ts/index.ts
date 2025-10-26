@@ -7,6 +7,7 @@ import { widget_t } from "./widgets/widget";
 import { loadStylesheet } from "./resources/stylesheet";
 import { registerCoreWidgets } from "./coreWidgets";
 import { exportToWindow } from "./exported";
+import { loadModule } from "./resources/module";
 
 // @internal
 function main(): Promise<void> {
@@ -20,7 +21,7 @@ function main(): Promise<void> {
     const splashHeading: HTMLHeadingElement = document.createElement("h1");
     splashHeading.innerText = "SSS";
     const splashStatus: HTMLParagraphElement = document.createElement("p");
-    splashStatus.innerText = "Loading layout...";
+    splashStatus.innerText = "Loading...";
     const setError = (error: string): void => {
         splashStatus.innerText = error;
         document.title = "Error | SSS";
@@ -40,28 +41,34 @@ function main(): Promise<void> {
             setError(error as string);
             reject();
         }
-        // Load layouts
-        await Promise.all([structure_t.generate(gui_data!.structure), loadStylesheet(gui_data!.stylesheet)]).then((main: (void | widget_t)[]) => {
-            if (main[0] instanceof widget_t) {
-                splashStatus.innerText = "Rending layout...";
-                main[0].render().then((mainElement: HTMLElement) => {
-                    while (document.body.children.length > 0) {
-                        document.body.removeChild(document.body.children[0]);
-                    }
-                    document.documentElement.replaceChild(document.createElement("body"), splashContainer);
-                    document.body.appendChild(mainElement);
-                    document.title = gui_data!.name.trim() + " | SSS";
-                    resolve();
+        try {
+            // Load modules
+            splashStatus.innerText = "Loading modules...";
+            await Promise.all(gui_data!.modules.map(module => loadModule(module)));
+            // Load layouts
+            splashStatus.innerText = "Loading layout...";
+            await Promise.all([structure_t.generate(gui_data!.structure), loadStylesheet(gui_data!.stylesheet)]).then((main: (void | widget_t)[]) => {
+                if (main[0] instanceof widget_t) {
+                    splashStatus.innerText = "Rending layout...";
+                    main[0].render().then((mainElement: HTMLElement) => {
+                        while (document.body.children.length > 0) {
+                            document.body.removeChild(document.body.children[0]);
+                        }
+                        document.documentElement.replaceChild(document.createElement("body"), splashContainer);
+                        document.body.appendChild(mainElement);
+                        document.title = gui_data!.name.trim() + " | SSS";
+                        resolve();
 
-                }).catch((error) => {
-                    setError(error);
-                    reject();
-                });
-            }
-        }).catch((error) => {
-            setError(error);
+                    }).catch((error) => {
+                        setError(error);
+                        reject();
+                    });
+                }
+            })
+        } catch (error: any) {
+            setError(error as string);
             reject();
-        });
+        }
     });
 }
 
