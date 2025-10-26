@@ -12,9 +12,7 @@ build({
     plugins: [
         sassPlugin({
             type: "css-text",
-            sassOptions: {
-                outputStyle: "compressed",
-            },
+            style: "compressed",
         }),
     ]
 }).catch((error) => {
