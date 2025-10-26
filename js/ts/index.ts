@@ -7,7 +7,7 @@ import { widget_t } from "./widgets/widget";
 import { loadStylesheet } from "./resources/stylesheet";
 import { registerCoreWidgets } from "./coreWidgets";
 import { exportToWindow } from "./exported";
-import { loadModule } from "./resources/module";
+import { loadModule, loadModules } from "./resources/module";
 
 // @internal
 function main(): Promise<void> {
@@ -42,12 +42,15 @@ function main(): Promise<void> {
             reject();
         }
         try {
+            // Start loading stylesheet
+            const stylesheet: Promise<void> = loadStylesheet(gui_data!.stylesheet);
             // Load modules
             splashStatus.innerText = "Loading modules...";
-            await Promise.all(gui_data!.modules.map(module => loadModule(module)));
+            gui_data!.modules.map(module => loadModule(module));
+            await loadModules();
             // Load layouts
             splashStatus.innerText = "Loading layout...";
-            await Promise.all([structure_t.generate(gui_data!.structure), loadStylesheet(gui_data!.stylesheet)]).then((main: (void | widget_t)[]) => {
+            await Promise.all([structure_t.generate(gui_data!.structure), stylesheet]).then((main: (void | widget_t)[]) => {
                 if (main[0] instanceof widget_t) {
                     splashStatus.innerText = "Rending layout...";
                     main[0].render().then((mainElement: HTMLElement) => {

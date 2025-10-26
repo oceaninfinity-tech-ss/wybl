@@ -1,8 +1,9 @@
+import { loadModule } from "./resources/module";
 import { loadStylesheet } from "./resources/stylesheet";
 import { structure_t, widgetIdentifier_t } from "./structure";
 import { widget_t } from "./widgets/widget";
 
-export { loadStylesheet };
+export { loadStylesheet, loadModule };
 
 /**
  * Declare a widget type that applies to a factory that can be created from a structure
@@ -33,14 +34,10 @@ export function structureWidgetExists(identifier: widgetIdentifier_t): boolean {
  * @internal
  */
 export function exportToWindow(): void {
-    /* webpack preserve */
     (window as any).structureDeclareWidget = structureDeclareWidget;
-    /* webpack preserve */
     (window as any).structureWidget = structureWidget;
-    /* webpack preserve */
     (window as any).structureWidgetExists = structureWidgetExists;
-    /* webpack preserve */
     (window as any).widget_t = widget_t;
-    /* webpack preserve */
     (window as any).loadStylesheet = loadStylesheet;
+    (window as any).loadModule = loadModule;
 };
