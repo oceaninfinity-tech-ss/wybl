@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build-release": "node build.js"
+    "build": "npm run build:bundle && npm run build:dts",
+    "build:bundle": "node build.js",
+    "build:dts": "tsc && dts-bundle-generator --no-banner --inline-declare-externals --no-check dist/types/exported.d.ts -o dist/guis.d.ts"
   },
   "description": "SSS GUI",
   "devDependencies": {

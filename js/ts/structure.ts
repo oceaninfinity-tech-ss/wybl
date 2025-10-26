@@ -4,6 +4,7 @@ import { widget_t } from "./widgets/widget";
  * Tuple structure of widget contents
  * @first Type of widget
  * @second Configuration of widget
+ * @internal
  */
 type structure_widget_schema_t = [number, any];
 
@@ -52,6 +53,7 @@ export type widgetIdentifier_t = (string | number);
 
 /**
  * Manage structural widgets
+ * @internal
  */
 export abstract class structure_t {
     /**

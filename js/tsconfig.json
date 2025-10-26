@@ -1,16 +1,26 @@
 {
     "compilerOptions": {
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
         "declaration": true,
+        "declarationDir": "./dist/types",
+        "emitDeclarationOnly": true,
         "stripInternal": true,
         "noImplicitAny": true,
         "target": "ES5",
         "module": "es2015",
-        "lib": ["es2015", "DOM"],
+        "lib": [
+            "es2015",
+            "DOM"
+        ],
         "moduleResolution": "bundler",
         "esModuleInterop": true,
         "strict": true,
         "alwaysStrict": true,
         "noUnusedParameters": true,
         "noUnusedLocals": true
-    }
+    },
+    "include": [
+        "ts/**/*"
+    ]
 }

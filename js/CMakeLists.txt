@@ -35,13 +35,7 @@ set(GENERATED_JS "${WORKING_DIRECTORY_LOCATION}/dist/guis.js")
 set(GENERATED_INCLUDE_DIRECTORY "${WORKING_DIRECTORY_LOCATION}/dist/include")
 set(GENERATED_HEADER "${GENERATED_INCLUDE_DIRECTORY}/guis.js.hpp")
 
-if (${CMAKE_BUILD_TYPE})
-    string(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_MODE)
-else()
-    set(CMAKE_BUILD_MODE "release")
-endif()
-
-add_custom_command(COMMAND npm run build-${CMAKE_BUILD_MODE}
+add_custom_command(COMMAND npm run build
                    OUTPUT ${GENERATED_JS}
                    COMMENT "Generating JavaScript bundle"
                    WORKING_DIRECTORY "${WORKING_DIRECTORY_LOCATION}")
