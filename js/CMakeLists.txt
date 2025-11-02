@@ -37,13 +37,13 @@ set(GENERATED_HEADER "${GENERATED_INCLUDE_DIRECTORY}/guis.js.hpp")
 
 add_custom_command(COMMAND npm run build
                    OUTPUT ${GENERATED_JS}
-                   COMMENT "Generating JavaScript bundle"
+                   COMMENT "Generating sss-guis JavaScript bundle"
                    WORKING_DIRECTORY "${WORKING_DIRECTORY_LOCATION}")
 add_custom_command(COMMAND ${CMAKE_COMMAND} -E make_directory "${GENERATED_INCLUDE_DIRECTORY}/"
                    COMMAND xxd -i -n "${PROJECT_NAME}" "${GENERATED_JS}" > "${GENERATED_HEADER}"
                    OUTPUT ${GENERATED_HEADER}
                    WORKING_DIRECTORY "${WORKING_DIRECTORY_LOCATION}"
-                   COMMENT "Converting JavaScript bundle into embeddable string"
+                   COMMENT "Converting sss-guis JavaScript bundle into embeddable string"
                    DEPENDS "${GENERATED_JS}")
 
 add_library(${PROJECT_NAME} INTERFACE ${GENERATED_HEADER})

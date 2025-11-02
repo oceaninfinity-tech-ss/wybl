@@ -19,29 +19,29 @@ set(SOURCES src/dependencies.cpp
             src/guis.cpp
             src/structure.cpp)
 
-option(BUILD_AS_SHARED_LIBRARY "Build as shared library" OFF)
-option(BUILD_AS_STATIC_LIBRARY "Build as static library" OFF)
-option(BUILD_EXECUTABLE "Build an executable" ON)
+option(SSS_GUIS_BUILD_AS_SHARED_LIBRARY "Build as shared library" OFF)
+option(SSS_GUIS_BUILD_AS_STATIC_LIBRARY "Build as static library" OFF)
+option(SSS_GUIS_BUILD_EXECUTABLE "Build an executable" ON)
 
-if (BUILD_EXECUTABLE)
-    if (NOT(BUILD_AS_SHARED_LIBRARY OR BUILD_AS_STATIC_LIBRARY))
-        set(BUILD_AS_SHARED_LIBRARY ON)
-        message("-- No library type was defined so defaulting to a shared library")
+if (SSS_GUIS_BUILD_EXECUTABLE)
+    if (NOT(SSS_GUIS_BUILD_AS_SHARED_LIBRARY OR SSS_GUIS_BUILD_AS_STATIC_LIBRARY))
+        set(SSS_GUIS_BUILD_AS_SHARED_LIBRARY ON)
+        message("-- ${PROJECT_NAME}: No library type was defined so defaulting to a shared library")
     endif()
 endif()
 
-if (BUILD_AS_SHARED_LIBRARY)
-    message("-- Building ${PROJECT_NAME} as a shared library")
+if (SSS_GUIS_BUILD_AS_SHARED_LIBRARY)
+    message("-- ${PROJECT_NAME}: Building ${PROJECT_NAME} as a shared library")
     add_library(${LIBRARY_NAME} SHARED ${SOURCES})
-elseif (BUILD_AS_STATIC_LIBRARY)
-    message("-- Building ${PROJECT_NAME} as a static library")
+elseif (SSS_GUIS_BUILD_AS_STATIC_LIBRARY)
+    message("-- ${PROJECT_NAME}: Building ${PROJECT_NAME} as a static library")
     add_library(${LIBRARY_NAME} STATIC ${SOURCES})
-elseif (NOT(BUILD_EXECUTABLE))
-    message(FATAL_ERROR "Nothing is configured to be build for ${PROJECT_NAME}")
+elseif (NOT(SSS_GUIS_BUILD_EXECUTABLE))
+    message(FATAL_ERROR "${PROJECT_NAME}: Nothing is configured to be built")
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include
-                    ${SSS-GUIS-JS-HEADER})
+target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+                                           PRIVATE ${SSS-GUIS-JS-HEADER})
 
 target_link_libraries(${LIBRARY_NAME} PRIVATE yaml-cpp
                                               nlohmann_json::nlohmann_json
@@ -56,7 +56,7 @@ target_compile_options(${LIBRARY_NAME} PRIVATE -Wall
 
 set_target_properties(${LIBRARY_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
-if (BUILD_EXECUTABLE)
+if (SSS_GUIS_BUILD_EXECUTABLE)
     message("   Building ${PROJECT_NAME} as an executable (as well)")
     add_executable(${EXECUTABLE_NAME} main.cpp)
     target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LIBRARY_NAME})
@@ -67,9 +67,3 @@ if (BUILD_EXECUTABLE)
     )
     set_target_properties(${EXECUTABLE_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 endif()
-
-include(CMakePackageConfigHelpers)
-install(TARGETS ${LIBRARY_NAME} EXPORT "${PROJECT_NAME}Targets"
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib)
