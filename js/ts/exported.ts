@@ -1,9 +1,10 @@
 import { loadModule } from "./resources/module";
+import { loadResource } from "./resources/resource";
 import { loadStylesheet } from "./resources/stylesheet";
 import { structure_t, widgetIdentifier_t } from "./structure";
 import { widget_t } from "./widgets/widget";
 
-export { loadStylesheet, loadModule };
+export { loadModule, loadResource, loadStylesheet };
 
 /**
  * Declare a widget type that applies to a factory that can be created from a structure
