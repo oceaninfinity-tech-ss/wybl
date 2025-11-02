@@ -7,10 +7,10 @@
         "emitDeclarationOnly": true,
         "stripInternal": true,
         "noImplicitAny": true,
-        "target": "ES5",
+        "target": "es2017",
         "module": "es2015",
         "lib": [
-            "es2015",
+            "es2017",
             "DOM"
         ],
         "moduleResolution": "bundler",

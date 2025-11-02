@@ -81,12 +81,18 @@ export class tabs_t extends widget_t {
             const tabButtons: HTMLButtonElement[] = [];
             let firstTab: boolean = true;
             try {
-                for (const tab of Object.keys(this.tabs)) {
+                let tabsPromises: { [key: string]: Promise<HTMLElement> } = {};
+                Object.entries(this.tabs).forEach(
+                    ([tab, widget]) => {
+                        tabsPromises[tab] = widget.render();
+                    });
+                await Promise.all(Object.values(tabsPromises));
+                await Object.entries(tabsPromises).forEach(async ([tab, widget]) => {
+                    const tabObject: HTMLElement = await widget;
                     const tabButton: HTMLButtonElement = document.createElement("button");
                     tabButton.innerText = tab;
                     tabButtons.push(tabButton);
                     tabButtonContainer.appendChild(tabButton);
-                    const tabObject: HTMLElement = await this.tabs[tab].render();
                     tabButton.addEventListener("click", () => {
                         if (tabView.firstElementChild !== tabObject) {
                             tabView.replaceChildren(tabObject);
@@ -102,7 +108,7 @@ export class tabs_t extends widget_t {
                         tabButton.click();
                         firstTab = false;
                     }
-                }
+                });
                 this.content.appendChild(tabButtonContainer);
                 this.content.appendChild(tabView);
                 resolve(this.content);

@@ -29,7 +29,7 @@ function main(): Promise<void> {
     splashContent.appendChild(splashHeading);
     splashContent.appendChild(splashStatus);
     splashShadowRoot.appendChild(splashContent);
-    document.body = splashContainer;
+    document.body.replaceWith(splashContainer);
     exportToWindow();
     registerCoreWidgets();
     return new Promise<void>(async (resolve, reject) => {
@@ -75,4 +75,4 @@ function main(): Promise<void> {
     });
 }
 
-main().catch(() => { });
+window.addEventListener("load", main);

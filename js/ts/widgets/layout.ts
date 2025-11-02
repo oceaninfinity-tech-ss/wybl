@@ -75,10 +75,15 @@ export class layout_t extends widget_t {
     public render(): Promise<HTMLElement> {
         return new Promise<HTMLElement>(async (resolve, reject) => {
             try {
-                for (const child of this.children) {
-                    const object: HTMLElement = await child.render();
-                    this.content.appendChild(object);
-                }
+                let childrenPromises: Promise<HTMLElement>[] = [];
+                this.children.forEach(child => {
+                    childrenPromises.push(child.render());
+                });
+                await Promise.all(childrenPromises).then(async children => {
+                    await children.forEach(async (object) => {
+                        this.content.appendChild(await object);
+                    });
+                });
                 resolve(this.content);
             } catch (error) {
                 if (error instanceof RangeError) {
