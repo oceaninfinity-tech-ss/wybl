@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 set(PROJECT_NAME sss-guis)
 
-project(${PROJECT_NAME} LANGUAGES CXX VERSION 0.2.0)
+project(${PROJECT_NAME} LANGUAGES CXX VERSION 0.2.1)
 
 set(EXECUTABLE_NAME ${PROJECT_NAME}_executable)
 set(LIBRARY_NAME ${PROJECT_NAME}_library)
@@ -67,3 +67,9 @@ if (BUILD_EXECUTABLE)
     )
     set_target_properties(${EXECUTABLE_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 endif()
+
+include(CMakePackageConfigHelpers)
+install(TARGETS ${LIBRARY_NAME} EXPORT "${PROJECT_NAME}Targets"
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
