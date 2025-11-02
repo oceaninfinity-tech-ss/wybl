@@ -1,8 +1,10 @@
+import { loadResource, multimediaResource_t } from "./resource";
+
 var modules: { [key: string]: Promise<void> } = {};
 var modulesLoaded: number = 0;
 
 /**
- * Asynchronously Load a module
+ * Asynchronously load a module
  * @async
  * @param {string} url The location of the module
  * @returns {Promise<void>} Success of the loading of the module
@@ -12,17 +14,22 @@ export function loadModule(url: string): Promise<void> {
         return modules[url];
     }
     let module: Promise<void> = new Promise<void>((resolve, reject) => {
-        const module: HTMLScriptElement = document.createElement("script");
-        module.type = "module"
-        module.src = url;
-        module.crossOrigin = "anonymous";
-        module.async = true;
-        module.onload = () => {
-            modulesLoaded++;
-            resolve();
-        };
-        module.onerror = () => reject(`Failed to load module: ${url}`);
-        document.head.appendChild(module);
+        const failure = (): void => {
+            reject(`Failed to load module: ${url}`);
+        }
+        loadResource(url).then((resource: multimediaResource_t) => {
+            const module: HTMLScriptElement = document.createElement("script");
+            module.type = "module"
+            module.src = resource.blobUrl;
+            module.crossOrigin = "anonymous";
+            module.async = true;
+            module.onload = () => {
+                modulesLoaded++;
+                resolve();
+            };
+            module.onerror = () => failure();
+            document.head.appendChild(module);
+        });
     });
     modules[url] = module;
     return module;
