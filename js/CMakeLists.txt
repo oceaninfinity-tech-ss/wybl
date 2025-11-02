@@ -5,47 +5,56 @@ set(PROJECT_NAME sss-guis-js)
 project(${PROJECT_NAME} LANGUAGES CXX)
 
 set(WORKING_DIRECTORY_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/js-gen)
-
 file(MAKE_DIRECTORY "${WORKING_DIRECTORY_LOCATION}")
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-file(GLOB_RECURSE FILES_TO_MONITOR "${SOURCE_DIR}/*")
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${FILES_TO_MONITOR})
+set(PACKAGE_JSON_SOURCE "${SOURCE_DIR}/package.json")
+set(PACKAGE_JSON_DESTINATION "${WORKING_DIRECTORY_LOCATION}/package.json")
+
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt" # A dummy input file
-    "${CMAKE_CURRENT_BINARY_DIR}/.reconfigure_trigger"
+    "${PACKAGE_JSON_SOURCE}"
+    "${WORKING_DIRECTORY_LOCATION}/package.json"
     COPYONLY
 )
 
-foreach(file_path ${FILES_TO_MONITOR})
-    string(FIND "${file_path}" "${SOURCE_DIR}/" is_prefix)
-    if (is_prefix EQUAL 0)
-        file(RELATIVE_PATH relative_file_path "${SOURCE_DIR}" "${file_path}")
-        set(full_destination_path "${WORKING_DIRECTORY_LOCATION}/${relative_file_path}")
-        get_filename_component(destination_dir "${full_destination_path}" DIRECTORY)
-        file(MAKE_DIRECTORY "${destination_dir}")
-        file(COPY "${file_path}" DESTINATION "${destination_dir}")
-    endif()
-endforeach()
+add_custom_target(
+    sss-guis_js_dependencies
+    DEPENDS "${PACKAGE_JSON_DESTINATION}"
+)
 
-message("-- Fetching: npm dependencies")
+message("-- sss-guis: Installing npm dependencies")
 execute_process(COMMAND npm i
-                WORKING_DIRECTORY "${WORKING_DIRECTORY_LOCATION}")
+                WORKING_DIRECTORY "${WORKING_DIRECTORY_LOCATION}"
+                RESULT_VARIABLE npm_install_result
+                OUTPUT_VARIABLE npm_install_output
+)
+
+if(npm_install_result AND NOT npm_install_result EQUAL 0)
+    message(FATAL_ERROR "Failed to install npm packages")
+endif()
 
 set(GENERATED_JS "${WORKING_DIRECTORY_LOCATION}/dist/guis.js")
 set(GENERATED_INCLUDE_DIRECTORY "${WORKING_DIRECTORY_LOCATION}/dist/include")
 set(GENERATED_HEADER "${GENERATED_INCLUDE_DIRECTORY}/guis.js.hpp")
+set(TEMP_HEADER "${CMAKE_CURRENT_BINARY_DIR}/guis.js.hpp.temp")
 
-add_custom_command(COMMAND npm run build
-                   OUTPUT ${GENERATED_JS}
-                   COMMENT "Generating sss-guis JavaScript bundle"
-                   WORKING_DIRECTORY "${WORKING_DIRECTORY_LOCATION}")
-add_custom_command(COMMAND ${CMAKE_COMMAND} -E make_directory "${GENERATED_INCLUDE_DIRECTORY}/"
-                   COMMAND xxd -i -n "${PROJECT_NAME}" "${GENERATED_JS}" > "${GENERATED_HEADER}"
-                   OUTPUT ${GENERATED_HEADER}
-                   WORKING_DIRECTORY "${WORKING_DIRECTORY_LOCATION}"
-                   COMMENT "Converting sss-guis JavaScript bundle into embeddable string"
-                   DEPENDS "${GENERATED_JS}")
+add_custom_target(
+    sss-guis_js_bundle
+    ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${CMAKE_CURRENT_SOURCE_DIR}" "${WORKING_DIRECTORY_LOCATION}"
+    COMMAND npm run build
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${GENERATED_INCLUDE_DIRECTORY}/"
+    COMMAND xxd -i -n "${PROJECT_NAME}" "${GENERATED_JS}" > "${TEMP_HEADER}"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${TEMP_HEADER}" "${GENERATED_HEADER}"
+    COMMAND ${CMAKE_COMMAND} -E remove "${TEMP_HEADER}"
+    WORKING_DIRECTORY "${WORKING_DIRECTORY_LOCATION}"
+    COMMENT "Generating sss-guis JavaScript bundle"
+    VERBATIM
+)
+
+set_property(SOURCE ${GENERATED_HEADER} PROPERTY GENERATED TRUE)
 
 add_library(${PROJECT_NAME} INTERFACE ${GENERATED_HEADER})
 
 set(SSS-GUIS-JS-HEADER ${GENERATED_INCLUDE_DIRECTORY} PARENT_SCOPE)
+
+add_dependencies(${PROJECT_NAME} sss-guis_js_dependencies sss-guis_js_bundle)
