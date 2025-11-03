@@ -7,6 +7,9 @@ project(${PROJECT_NAME} LANGUAGES CXX VERSION 0.2.1)
 set(EXECUTABLE_NAME ${PROJECT_NAME}_executable)
 set(LIBRARY_NAME ${PROJECT_NAME}_library)
 
+set(CMAKE_INSTALL_RPATH "")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set(CMAKE_SKIP_RPATH FALSE)
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 
 find_package(yaml-cpp REQUIRED)
@@ -33,6 +36,13 @@ endif()
 if (SSS_GUIS_BUILD_AS_SHARED_LIBRARY)
     message("-- ${PROJECT_NAME}: Building ${PROJECT_NAME} as a shared library")
     add_library(${LIBRARY_NAME} SHARED ${SOURCES})
+    install(TARGETS ${LIBRARY_NAME}
+            DESTINATION lib
+            PERMISSIONS
+                OWNER_READ OWNER_EXECUTE
+                GROUP_READ GROUP_EXECUTE
+                WORLD_READ WORLD_EXECUTE
+    )
 elseif (SSS_GUIS_BUILD_AS_STATIC_LIBRARY)
     message("-- ${PROJECT_NAME}: Building ${PROJECT_NAME} as a static library")
     add_library(${LIBRARY_NAME} STATIC ${SOURCES})
@@ -66,4 +76,32 @@ if (SSS_GUIS_BUILD_EXECUTABLE)
                                SSS_GUIS_VERSION_PATCH=${sss-guis_VERSION_PATCH}
     )
     set_target_properties(${EXECUTABLE_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+
+    install(TARGETS ${EXECUTABLE_NAME}
+            DESTINATION bin
+            PERMISSIONS
+                OWNER_READ OWNER_EXECUTE
+                GROUP_READ GROUP_EXECUTE
+                WORLD_READ WORLD_EXECUTE
+    )
 endif()
+
+install(FILES ${SSS-GUIS-DECLARATION-HEADER}
+        DESTINATION "/include/sss/guis/"
+        PERMISSIONS
+            OWNER_READ OWNER_EXECUTE
+            GROUP_READ GROUP_EXECUTE
+            WORLD_READ WORLD_EXECUTE
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include
+        DESTINATION "/usr/include/sss/guis"
+        FILE_PERMISSIONS
+            OWNER_READ OWNER_WRITE
+            GROUP_READ
+            WORLD_READ
+        DIRECTORY_PERMISSIONS
+            OWNER_READ OWNER_WRITE
+            GROUP_READ
+            WORLD_READ
+)
