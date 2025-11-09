@@ -2,7 +2,7 @@ $side-margin: 5em;
 
 div {
     min-width: calc(100% - ($side-margin * 2));
-    min-height: calc(100% - ($side-margin * 2));
+    min-height: auto;
     max-width: calc(100% - ($side-margin * 2));
     max-height: calc(100% - ($side-margin * 2));
     margin: $side-margin auto auto;
@@ -18,7 +18,7 @@ div {
     }
 
     & h1 {
-        font-size: 6em;
+        font-size: min(6em, 10dvw);
         font-weight: bold;
     }
 

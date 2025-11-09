@@ -53,29 +53,23 @@ export class tabs_t extends widget_t {
                     const position: tabsPosition_t = (configuration as any).position;
                     switch (position) {
                         case "top":
-                            this.position = "top";
-                            break;
                         case "right":
-                            this.position = "right";
-                            break;
                         case "bottom":
-                            this.position = "bottom";
-                            break;
                         case "left":
-                            this.position = "left";
+                            this.position = position;
                             break;
                         default:
-                            throw new Error(`The defined position "${position}" for a collection of tabs is not allowed`);
+                            throw new Error(`"${position}" is not a valid position for a collection of tabs`);
                     }
                     break;
                 }
-                throw new Error(`The position for a collection of tabs must be a string`);
+                throw new Error("The `position` for a collection of tabs must be a string");
             } while (false);
         }
     }
     public render(): Promise<HTMLElement> {
         return new Promise<HTMLElement>(async (resolve, reject) => {
-            this.content.style.setProperty("--position", this.position);
+            this.content.setAttribute("position", this.position);
             const tabButtonContainer: HTMLDivElement = document.createElement("div");
             const tabView: HTMLDivElement = document.createElement("div");
             const tabButtons: HTMLButtonElement[] = [];
