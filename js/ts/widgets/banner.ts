@@ -1,13 +1,13 @@
 import { textual_t, textualAlignment_t } from "./textual";
 
-const textualAlignmentDefault: textualAlignment_t = "left";
+const textualAlignmentDefault: textualAlignment_t = "center";
 
 /**
- * A textual widget used to show text
+ * A banner widget used to show text
  */
-export class text_t extends textual_t {
+export class banner_t extends textual_t {
     constructor() {
-        super("span", "text");
+        super("h2", "banner");
     };
     public configuration(configuration: Object): void {
         super.configuration(configuration);
