@@ -26,7 +26,7 @@ export class tabs_t extends widget_t {
     public configuration(configuration: Object): void {
         if (!this.configurationHas(configuration, "items") ||
             !Array.isArray((configuration as any).items)) {
-            throw new Error("Tabs needs items");
+            throw new Error("A tabs widget is missing `items`");
         }
         ((configuration as any).items as Object[]).forEach((item: any) => {
             if (!this.configurationHas(item, "name")) {
@@ -45,7 +45,7 @@ export class tabs_t extends widget_t {
             this.tabs[tabName] = structure_t.widget(item.object);
         });
         if (Object.keys(this.tabs).length == 0) {
-            throw new Error("Tabs needs items");
+            throw new Error("A tabs widget is missing `items`");
         }
         if (this.configurationHas(configuration, "position")) {
             do {

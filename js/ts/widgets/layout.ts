@@ -23,11 +23,11 @@ export class layout_t extends widget_t {
     public configuration(configuration: Object): void {
         if (!this.configurationHas(configuration, "columns") ||
             !Array.isArray((configuration as any).columns)) {
-            throw new Error("A layout needs a numeric set of columns");
+            throw new Error("A layout needs a numeric set of `columns`");
         }
         if (!this.configurationHas(configuration, "rows") ||
             !Array.isArray((configuration as any).rows)) {
-            throw new Error("A layout needs a numeric set of rows");
+            throw new Error("A layout needs a numeric set of `rows`");
         }
         const columns: number[] = (configuration as any).columns;
         const rows: number[] = (configuration as any).rows;

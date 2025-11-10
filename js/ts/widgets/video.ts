@@ -14,7 +14,7 @@ export class video_t extends widget_t {
     private source!: string;
     public configuration(configuration: Object): void {
         if (!this.configurationHas(configuration, "source")) {
-            throw new Error("A video widget requires a source video");
+            throw new Error("Missing video `source` for a video widget");
         }
         this.source = (configuration as any).source as string;
     }

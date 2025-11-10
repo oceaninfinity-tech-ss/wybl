@@ -14,7 +14,7 @@ export class audio_t extends widget_t {
     protected source!: string;
     public configuration(configuration: Object): void {
         if (!this.configurationHas(configuration, "source")) {
-            throw new Error("A audio widget requires an audio source");
+            throw new Error("Missing audio `source` for an audio widget");
         }
         this.source = (configuration as any).source as string;
     }

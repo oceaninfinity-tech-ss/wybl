@@ -14,7 +14,7 @@ export class image_t extends widget_t {
     private source!: string;
     public configuration(configuration: Object): void {
         if (!this.configurationHas(configuration, "source")) {
-            throw new Error("A image widget requires a source image");
+            throw new Error("Missing image `source` for an image widget");
         }
         this.source = (configuration as any).source as string;
     }
