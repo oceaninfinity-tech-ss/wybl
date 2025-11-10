@@ -31,8 +31,6 @@ export class layout_t extends widget_t {
         }
         const columns: number[] = (configuration as any).columns;
         const rows: number[] = (configuration as any).rows;
-        const columnsReduced: number = columns.reduce((a, b) => (a + b));
-        const rowsReduced: number = rows.reduce((a, b) => (a + b));
         const maxItems: number = (columns.length * rows.length);
         if (this.configurationHas(configuration, "items")) {
             if (!Array.isArray((configuration as any).items)) {
@@ -56,16 +54,22 @@ export class layout_t extends widget_t {
             return;
         }
         this.content.style.setProperty("--columns", columns.map(column => {
+            if (typeof column !== "number") {
+                throw new Error(`A layout requires a numerical column size - not "${column}"`);
+            }
             if (column <= 0) {
                 throw new Error("A layout can only have a column with a size of more than 0");
             }
-            return (((column / columnsReduced) * 100).toString() + "%");
+            return (column.toString() + "fr");
         }).join(" "));
         this.content.style.setProperty("--rows", rows.map(row => {
+            if (typeof row !== "number") {
+                throw new Error(`A layout requires a numerical row size - not "${row}"`);
+            }
             if (row <= 0) {
                 throw new Error("A layout can only have a row with a size of more than 0");
             }
-            return (((row / rowsReduced) * 100).toString() + "%");
+            return (row.toString() + "fr");
         }).join(" "));
         // Fill the remaining cells...
         for (let i = this.children.length; i < maxItems; i++) {
