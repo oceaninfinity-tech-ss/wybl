@@ -215,6 +215,10 @@ void structure_t::parse_file(std::filesystem::path const &file)
                 throw std::runtime_error("Unable to parse `dependencies` since a list is expected");
         }
     }
+    catch (const std::runtime_error &e)
+    {
+        throw e;
+    }
     catch (const std::exception &e)
     {
         throw std::runtime_error("Unable to parse dependency file of `" + file.string() + "`");
