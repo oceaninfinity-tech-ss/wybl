@@ -20,7 +20,6 @@ export abstract class textual_t extends widget_t {
                 case "center":
                 case "justify":
                     shadowStyling += textualAlignment;
-                    this.content.style.textAlign = textualAlignment;
                     break;
                 default:
                     throw new Error(`"${textualAlignment}" is not a valid alignment for a ${this.content.className} widget`);
