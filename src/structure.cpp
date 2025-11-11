@@ -144,6 +144,14 @@ void structure_t::parse_file(std::filesystem::path const &file)
     {
         YAML::Node contents = YAML::LoadFile(file.string());
 
+        if (contents.IsNull())
+        {
+            debug(m_debug_stream, m_name, "Empty dependency file located at `" + file.string() + "`");
+            return;
+        }
+        if (!contents.IsMap())
+            throw std::runtime_error("Unable to parse non-mappable structure within `" + file.string() + "`");
+
         for (const auto &widget_entry : contents)
         {
             widget_name_t widget_name;
