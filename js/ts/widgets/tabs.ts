@@ -2,7 +2,7 @@ import { structure_t } from "../structure";
 import { widget_t } from "./widget";
 
 /**
- * Widgets that are stored children of a layout
+ * Widgets that are stored children of a tabs
  * @internal
  */
 type subWidget_t = widget_t;
@@ -10,7 +10,7 @@ type subWidget_t = widget_t;
 type tabsPosition_t = ("top" | "right" | "bottom" | "left");
 
 /**
- * A layout widget
+ * A tabs widget
  */
 export class tabs_t extends widget_t {
     /**
@@ -66,10 +66,10 @@ export class tabs_t extends widget_t {
                 throw new Error("The `position` for a collection of tabs must be a string");
             } while (false);
         }
+        this.content.setAttribute("position", this.position);
     }
     public render(): Promise<HTMLElement> {
         return new Promise<HTMLElement>(async (resolve, reject) => {
-            this.content.setAttribute("position", this.position);
             const tabButtonContainer: HTMLDivElement = document.createElement("div");
             const tabView: HTMLDivElement = document.createElement("div");
             const tabButtons: HTMLButtonElement[] = [];

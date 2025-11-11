@@ -34,7 +34,7 @@ export class layout_t extends widget_t {
         const maxItems: number = (columns.length * rows.length);
         if (this.configurationHas(configuration, "items")) {
             if (!Array.isArray((configuration as any).items)) {
-                throw new Error("A layout's items must be a list");
+                throw new Error("A layout's `items` must be a list");
             }
             (configuration as any).items.forEach((item: any) => {
                 if (this.children.length == maxItems) {
@@ -53,7 +53,7 @@ export class layout_t extends widget_t {
             console.warn("A layout has been created, but it has no `items`");
             return;
         }
-        this.content.style.setProperty("--columns", columns.map(column => {
+        const columnsStyle: string = columns.map(column => {
             if (typeof column !== "number") {
                 throw new Error(`A layout requires a numerical column size - not "${column}"`);
             }
@@ -61,8 +61,8 @@ export class layout_t extends widget_t {
                 throw new Error("A layout can only have a column with a size of more than 0");
             }
             return (column.toString() + "fr");
-        }).join(" "));
-        this.content.style.setProperty("--rows", rows.map(row => {
+        }).join(" ");
+        const rowsStyle: string = rows.map(row => {
             if (typeof row !== "number") {
                 throw new Error(`A layout requires a numerical row size - not "${row}"`);
             }
@@ -70,11 +70,17 @@ export class layout_t extends widget_t {
                 throw new Error("A layout can only have a row with a size of more than 0");
             }
             return (row.toString() + "fr");
-        }).join(" "));
+        }).join(" ");
         // Fill the remaining cells...
         for (let i = this.children.length; i < maxItems; i++) {
             this.children.push(new void_t());
         }
+        const layoutShadowRoot: ShadowRoot = this.content.attachShadow({ mode: "closed" });
+        const noInheritedStyling: CSSStyleSheet = new CSSStyleSheet();
+        noInheritedStyling.replaceSync(`:host{display:grid!important;grid-template-columns:${columnsStyle}!important;grid-template-rows:${rowsStyle}!important;}`);
+        layoutShadowRoot.adoptedStyleSheets = [noInheritedStyling];
+        const slot = document.createElement("slot");
+        layoutShadowRoot.appendChild(slot);
     }
     public render(): Promise<HTMLElement> {
         return new Promise<HTMLElement>(async (resolve, reject) => {

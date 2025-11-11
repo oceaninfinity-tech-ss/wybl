@@ -1,6 +1,4 @@
-import { textual_t, textualAlignment_t } from "./textual";
-
-const textualAlignmentDefault: textualAlignment_t = "left";
+import { textual_t } from "./textual";
 
 /**
  * A textual widget used to show text
@@ -10,9 +8,6 @@ export class text_t extends textual_t {
         super("span", "text");
     };
     public configuration(configuration: Object): void {
-        super.configuration(configuration);
-        if (!this.configurationHas(configuration, "align")) {
-            this.content.style.setProperty("--alignment", textualAlignmentDefault);
-        }
+        super.setConfiguration(configuration, "left");
     }
 };

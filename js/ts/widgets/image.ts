@@ -1,6 +1,8 @@
 import { loadResource, multimediaResource_t } from "../resources/resource";
 import { widget_t } from "./widget";
 
+type contain_t = "fit" | "fill";
+
 /**
  * An image widget
  */
@@ -17,6 +19,17 @@ export class image_t extends widget_t {
             throw new Error("Missing image `source` for an image widget");
         }
         this.source = (configuration as any).source as string;
+        if (this.configurationHas(configuration, "contain")) {
+            const contain: contain_t = (configuration as any).contain;
+            switch (contain) {
+                case "fit":
+                case "fill":
+                    this.content.setAttribute("contain", contain);
+                    break;
+                default:
+                    throw new Error(`"${contain}" is not a valid \`contain\` property for a video widget`);
+            }
+        }
     }
     public render(): Promise<HTMLElement> {
         return new Promise<HTMLElement>((resolve, reject) => {
