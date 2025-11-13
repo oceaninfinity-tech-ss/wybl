@@ -34,10 +34,10 @@ export abstract class textual_t extends widget_t {
              * @param {string} color String to validate
              * @returns {boolean} Whether the color is valid
              */
-            const isColor = (color: string): Boolean => {
+            const isColor = (color: string): boolean => {
                 const style: CSSStyleDeclaration = new Option().style;
                 style.color = color;
-                return style.color !== "";
+                return (style.color !== "");
             }
             const color: string = (configuration as any).color;
             if (!isColor(color)) {
