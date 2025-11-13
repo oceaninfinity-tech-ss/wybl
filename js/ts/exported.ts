@@ -1,10 +1,13 @@
+import { alert } from "./modals/alert";
+import { confirm } from "./modals/confirm";
+import { dialog } from "./modals/dialog";
 import { loadModule } from "./resources/module";
 import { loadResource } from "./resources/resource";
 import { loadStylesheet } from "./resources/stylesheet";
 import { structure_t, widgetIdentifier_t } from "./structure";
 import { widget_t } from "./widgets/widget";
 
-export { loadModule, loadResource, loadStylesheet };
+export { alert, confirm, dialog, loadModule, loadResource, loadStylesheet };
 
 /**
  * Declare a widget type that applies to a factory that can be created from a structure
@@ -41,4 +44,7 @@ export function exportToWindow(): void {
     (window as any).widget_t = widget_t;
     (window as any).loadStylesheet = loadStylesheet;
     (window as any).loadModule = loadModule;
+    (window as any).alert = alert;
+    (window as any).confirm = confirm;
+    (window as any).dialog = dialog;
 };
