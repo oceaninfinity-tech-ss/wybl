@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 set(PROJECT_NAME sss-guis)
 
-project(${PROJECT_NAME} LANGUAGES CXX VERSION 0.3.3)
+project(${PROJECT_NAME} LANGUAGES CXX VERSION 0.3.4)
 
 set(EXECUTABLE_NAME ${PROJECT_NAME}_executable)
 set(LIBRARY_NAME ${PROJECT_NAME}_library)
@@ -16,6 +16,9 @@ find_package(yaml-cpp REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 add_subdirectory(js EXCLUDE_FROM_ALL)
+if(NOT(PROJECT_IS_TOP_LEVEL))
+    set(SSS_GUIS_DECLARATION_HEADER ${SSS-GUIS-DECLARATION-HEADER} PARENT_SCOPE)
+endif()
 
 set(SOURCES src/dependencies.cpp
             src/generation.cpp
