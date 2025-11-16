@@ -7,7 +7,7 @@ import { loadStylesheet } from "./resources/stylesheet";
 import { structure_t, widgetIdentifier_t } from "./structure";
 import { widget_t } from "./widgets/widget";
 
-export { alert, confirm, dialog, loadModule, loadResource, loadStylesheet };
+export { alert, confirm, dialog, loadModule, loadResource, loadStylesheet, widget_t};
 
 /**
  * Declare a widget type that applies to a factory that can be created from a structure
