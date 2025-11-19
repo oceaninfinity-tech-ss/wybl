@@ -10,8 +10,8 @@ export abstract class textual_t extends widget_t {
         if (!this.configurationHas(configuration, "text")) {
             throw new Error(`A ${this.content.className} widget requires \`text\` to be shown`);
         }
-        let shadowStyling: string = "text-align:";
         this.content.innerText = (configuration as any).text as string;
+        let shadowStyling: string = "text-align:";
         if (this.configurationHas(configuration, "align")) {
             const textualAlignment: textualAlignment_t = (configuration as any).align;
             switch (textualAlignment) {
@@ -45,7 +45,6 @@ export abstract class textual_t extends widget_t {
             }
             shadowStyling += `color:${color}!important;`;
         }
-        this.content.innerText = (configuration as any).text as string;
         const textualShadowRoot: ShadowRoot = this.content.attachShadow({ mode: "closed" });
         const noInheritedStyling: CSSStyleSheet = new CSSStyleSheet();
         noInheritedStyling.replaceSync(`:host{${shadowStyling}}`);
