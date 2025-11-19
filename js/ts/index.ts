@@ -6,7 +6,7 @@ import { structure_t } from "./structure";
 import { widget_t } from "./widgets/widget";
 import { loadStylesheet } from "./resources/stylesheet";
 import { registerCoreWidgets } from "./coreWidgets";
-import { exportToWindow, guiLoadedEvent } from "./exported";
+import { exportToWindow } from "./exported";
 import { loadModule, loadModules } from "./resources/module";
 
 // @internal
@@ -60,7 +60,7 @@ function main(): Promise<void> {
                         document.documentElement.replaceChild(document.createElement("body"), splashContainer);
                         document.body.appendChild(mainElement);
                         document.title = gui_data!.name.trim() + " | SSS";
-                        document.dispatchEvent(new CustomEvent(guiLoadedEvent, {}));
+                        document.dispatchEvent(new Event("load"));
                         resolve();
                     }).catch((error) => {
                         setError(error);
