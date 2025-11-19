@@ -10,6 +10,11 @@ import { widget_t } from "./widgets/widget";
 export { alert, confirm, dialog, loadModule, loadResource, loadStylesheet, widget_t};
 
 /**
+ * The type of event dispatched when the GUI has successfully been rendered
+ */
+export const guiLoadedEvent = "guiLoaded" as const;
+
+/**
  * Declare a widget type that applies to a factory that can be created from a structure
  * @param {string} type The widget type to construct
  * @param {function(): widget_t} widget Widget factory function to create a widget of `type`
