@@ -44,6 +44,9 @@ export abstract class textual_t extends widget_t {
             } else {
                 this.content.setAttribute(textualAlignmentVerticalAttribute, textualAlignmentVerticalDefault);
             }
+        } else {
+            this.content.setAttribute(textualAlignmentHorizontalAttribute, textualAlignmentHorizontalDefault);
+            this.content.setAttribute(textualAlignmentVerticalAttribute, textualAlignmentVerticalDefault);
         }
         if (this.configurationHas(configuration, "color")) {
             /**
