@@ -8,6 +8,6 @@ export class text_t extends textual_t {
         super("span", "text");
     };
     public configuration(configuration: Object): void {
-        super.setConfiguration(configuration, "left");
+        super.setConfiguration(configuration, "left", "middle");
     }
 };
