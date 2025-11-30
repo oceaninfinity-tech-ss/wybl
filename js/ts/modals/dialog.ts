@@ -64,5 +64,6 @@ export function dialog(title: (string | null), content: HTMLElement, actions: st
         dialogElement.appendChild(buttonsElement);
         document.body.appendChild(dialogElement);
         dialogElement.showModal();
+        dialogElement.focus();
     });
 }
