@@ -1,19 +1,61 @@
+/**
+ * Interface for the GUI configuration
+ * @internal
+ */
+
 interface gui_schema_t {
+    /**
+     * The modules to load during startup of GUI
+     * @internal
+     */
     modules: string[];
+    /**
+     * The name/title of the GUI
+     * @internal
+     */
     name: string;
+    /**
+     * The path to the structure of the GUI
+     * @internal
+     */
     structure: string;
+    /**
+     * The stylesheet to apply to the GUI
+     * @internal
+     */
     stylesheet: string;
 }
 
-declare var gui: gui_schema_t | undefined;
+/**
+ * The provided GUI configuration - expected to be available from host document
+ * @internal
+ */
+declare var gui: (gui_schema_t | undefined);
 
 /**
+ * The accessible GUI configuration
  * @internal
  */
 export class gui_t {
+    /**
+     * The modules to load during startup of GUI
+     * @internal
+     */
     public modules!: string[];
+    /**
+     * The name/title of the GUI
+     * @internal
+     */
     public name!: string;
+    /**
+     * The path to the structure of the GUI
+     * @internal
+     */
     public structure!: string;
+    /**
+     * The stylesheet to apply to the GUI
+     * @internal
+     */
     public stylesheet!: string;
     constructor() {
         if (typeof gui === "undefined") {

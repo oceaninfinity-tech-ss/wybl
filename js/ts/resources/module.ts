@@ -1,6 +1,14 @@
 import { loadResource, multimediaResource_t } from "./resource";
 
+/**
+ * Collection of modules with associated promises
+ * @internal
+ */
 var modules: { [key: string]: Promise<void> } = {};
+/**
+ * Total amount of modules successfully loaded
+ * @internal
+ */
 var modulesLoaded: number = 0;
 
 /**

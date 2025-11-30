@@ -17,18 +17,21 @@ interface structure_schema_t {
      * Array or object consisting of widgets
      * @variation Array Is expected by default
      * @variation Object Is expected for debug variants
+     * @internal
      */
     widgets: structure_widget_schema_t[] | { [key: string]: structure_widget_schema_t };
     /**
      * Types of widgets that are used by the structure
+     * @internal
      */
     types: string[];
     /**
      * Reference to the main object
      * @variation number Is expected by default
      * @variation string Is expected for debug variants
+     * @internal
      */
-    main: number | string;
+    main: (number | string);
 }
 
 /**
@@ -38,10 +41,12 @@ interface structure_schema_t {
 enum widgetData_t {
     /**
      * Reference for the type of the widget
+     * @internal
      */
     widgetDataType = 0,
     /**
      * Reference for the configuration of the widget
+     * @internal
      */
     widgetDataConfiguration = 1,
 }
@@ -75,6 +80,7 @@ export abstract class structure_t {
      * Declare a widget type that applies to a factory that can be created from a structure
      * @param {string} type The widget type to construct
      * @param {function(): widget_t} widget Widget factory function to create a widget of `type`
+     * @internal
      */
     public static declareWidget(type: string, widget: () => widget_t): void {
         if (type in this.widgetDeclarations) {
@@ -107,6 +113,7 @@ export abstract class structure_t {
      * Get a widget
      * @param {widgetIdentifier_t} identifier Reference to a widget
      * @returns {widget_t} Widget
+     * @internal
      */
     public static widget(identifier: widgetIdentifier_t): widget_t {
         if (!this.widgetExists(identifier)) {
@@ -126,6 +133,7 @@ export abstract class structure_t {
      * Check whether a widget exists
      * @param {widgetIdentifier_t} identifier Reference to a widget
      * @returns {boolean} Whether a widget exist
+     * @internal
      */
     public static widgetExists(identifier: widgetIdentifier_t): boolean {
         if (Array.isArray(this.structure.widgets)) {

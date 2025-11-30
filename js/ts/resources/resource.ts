@@ -12,6 +12,10 @@ export interface multimediaResource_t {
     mimeType: string;
 }
 
+/**
+ * Collection of resources with associated promises
+ * @internal
+ */
 var resources: { [key: string]: Promise<multimediaResource_t> } = {};
 
 /**

@@ -1,9 +1,25 @@
 import { widget_t } from "./widget";
 
+/**
+ * The horizontal alignment of a textual widget
+ * @internal
+ */
 type textualAlignmentHorizontal_t = ("left" | "right" | "center");
+/**
+ * The vertical alignment of a textual widget
+ * @internal
+ */
 type textualAlignmentVertical_t = ("top" | "middle" | "bottom");
-const textualAlignmentHorizontalAttribute = "align";
-const textualAlignmentVerticalAttribute = "valign";
+/**
+ * The HTML attribute for horizontal alignment of a textual widget
+ * @internal
+ */
+const textualAlignmentHorizontalAttribute: string = "align";
+/**
+ * The HTML attribute for vertical alignment of a textual widget
+ * @internal
+ */
+const textualAlignmentVerticalAttribute: string = "valign";
 
 /**
  * A textual widget used to show text

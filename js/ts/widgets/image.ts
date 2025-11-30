@@ -1,7 +1,11 @@
 import { loadResource, multimediaResource_t } from "../resources/resource";
 import { widget_t } from "./widget";
 
-type contain_t = "fit" | "fill";
+/**
+ * The containment of the image widget
+ * @internal
+ */
+type contain_t = ("fit" | "fill");
 
 /**
  * An image widget

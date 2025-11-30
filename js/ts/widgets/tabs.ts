@@ -7,6 +7,10 @@ import { widget_t } from "./widget";
  */
 type subWidget_t = widget_t;
 
+/**
+ * The position of the tab buttons
+ * @internal
+ */
 type tabsPosition_t = ("top" | "right" | "bottom" | "left");
 
 /**
