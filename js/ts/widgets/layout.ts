@@ -57,8 +57,11 @@ export class layout_t extends widget_t {
             if (typeof column !== "number") {
                 throw new Error(`A layout requires a numerical column size - not "${column}"`);
             }
-            if (column <= 0) {
-                throw new Error("A layout can only have a column with a size of more than 0");
+            if (column == 0) {
+                return "auto";
+            }
+            if (column < 0) {
+                throw new Error("A layout can only have a column with a size that is positive");
             }
             return (column.toString() + "fr");
         }).join(" ");
@@ -66,8 +69,11 @@ export class layout_t extends widget_t {
             if (typeof row !== "number") {
                 throw new Error(`A layout requires a numerical row size - not "${row}"`);
             }
-            if (row <= 0) {
-                throw new Error("A layout can only have a row with a size of more than 0");
+            if (row == 0) {
+                return "auto";
+            }
+            if (row < 0) {
+                throw new Error("A layout can only have a row with a size that is positive");
             }
             return (row.toString() + "fr");
         }).join(" ");
