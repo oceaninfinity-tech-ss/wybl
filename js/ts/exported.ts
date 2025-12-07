@@ -44,6 +44,7 @@ export function exportToWindow(): void {
     (window as any).widget_t = widget_t;
     (window as any).loadStylesheet = loadStylesheet;
     (window as any).loadModule = loadModule;
+    (window as any).loadResource = loadResource;
     (window as any).alert = alert;
     (window as any).confirm = confirm;
     (window as any).dialog = dialog;
