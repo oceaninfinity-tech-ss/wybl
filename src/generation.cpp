@@ -59,7 +59,7 @@ namespace
      * @param paths A vector of filepaths
      * @returns A vector of filepaths with descendant filepaths removed
      */
-    std::vector<std::filesystem::path> const removeDescendantPaths(std::vector<std::filesystem::path> &paths)
+    std::vector<std::filesystem::path> const remove_descendant_paths(std::vector<std::filesystem::path> &paths)
     {
         // Sort the paths to ensure parent paths come before their descendants
         std::sort(paths.begin(), paths.end());
@@ -114,7 +114,7 @@ namespace
      * @param name The name to calculate against
      * @return Directory depth count
      */
-    int name_as_path_depth(const std::string &name)
+    int name_as_path_depth(std::string const &name)
     {
         std::filesystem::path name_path(name);
         int count = (std::distance(name_path.begin(), name_path.end()) - 1);
@@ -126,6 +126,26 @@ namespace
             count = 0;
         return count;
     }
+
+    /**
+     * @brief Sanitize name for use in filesystem
+     * @param name The name to sanitize
+     * @return Sanitized name
+     */
+    std::string sanitize_name(std::string const &name)
+    {
+        std::filesystem::path original(name);
+        std::filesystem::path result;
+
+        for (auto const &part : original)
+        {
+            if (part == std::filesystem::path("/") || part == ".." || part == ".")
+                continue;
+            result /= part;
+        }
+
+        return result.string();
+    }
 }
 
 generation_t::generation_t(std::filesystem::path const &configuration_file, std::filesystem::path const &output_directory)
@@ -134,20 +154,27 @@ generation_t::generation_t(std::filesystem::path const &configuration_file, std:
       m_configuration_directory(std::filesystem::absolute(configuration_file.lexically_normal()).parent_path()),
       m_output_directory(std::filesystem::absolute(output_directory.lexically_normal()))
 {
-    YAML::Node config;
+    std::vector<YAML::Node> gui_nodes = {};
     try
     {
-        config = YAML::LoadFile(configuration_file.string());
+        for (auto const &document : YAML::LoadAllFromFile(configuration_file.string()))
+        {
+            if (!document.IsDefined())
+                continue;
+            YAML::Node const guis = document["guis"];
+            if (!guis.IsDefined() || !guis.IsSequence())
+                continue;
+            for (auto &&gui : guis)
+                gui_nodes.push_back(gui);
+        }
+        if (gui_nodes.empty())
+            throw std::runtime_error("Expected list of `guis` in configuration");
     }
-    catch (const YAML::Exception &e)
+    catch (YAML::Exception const &e)
     {
-        throw std::runtime_error("Failed to load descriptive YAML file `" + configuration_file.string() + "`");
+        throw std::runtime_error("Failed to load descriptive YAML file \"" + configuration_file.string() + "\"");
     }
-
-    if (!config["guis"].IsDefined() || !config["guis"].IsSequence())
-        throw std::runtime_error("Expected list of `guis` in configuration");
-
-    for (const YAML::Node &gui_node : config["guis"])
+    for (YAML::Node const &gui_node : gui_nodes)
     {
         gui_t current_gui_data;
 
@@ -163,7 +190,7 @@ generation_t::generation_t(std::filesystem::path const &configuration_file, std:
                     gui_node[field].as<std::string>();
                     continue;
                 }
-                catch (const YAML::BadConversion &e)
+                catch (YAML::BadConversion const &e)
                 {
                 }
             }
@@ -179,35 +206,36 @@ generation_t::generation_t(std::filesystem::path const &configuration_file, std:
         current_gui_data.source_configuration_file = gui_node["config"].as<std::string>();
         current_gui_data.source_configuration_file = convert_relative_path_to_absolute(current_gui_data.source_configuration_file, configuration_file).string();
         if (current_gui_data.source_configuration_file.empty() || !std::filesystem::exists(current_gui_data.source_configuration_file))
-            throw std::runtime_error("Unable to find a source config file of `" + current_gui_data.source_configuration_file + "`");
+            throw std::runtime_error("Unable to find a source config file of \"" + current_gui_data.source_configuration_file + "\"");
 
         // Store stylesheet filepath of GUI
         current_gui_data.stylesheet_file = convert_relative_path_to_absolute(gui_node["stylesheet"].as<std::string>(), configuration_file);
         std::filesystem::path stylesheet_path = std::filesystem::absolute(current_gui_data.stylesheet_file);
         if (!std::filesystem::exists(stylesheet_path.string()))
-            throw std::runtime_error("Unable to find the stylesheet `" + current_gui_data.stylesheet_file + "`");
+            throw std::runtime_error("Unable to find the stylesheet \"" + current_gui_data.stylesheet_file + "\"");
         current_gui_data.stylesheet_file = convert_absolute_path_to_relative(stylesheet_path, m_configuration_directory);
         m_dependencies[stylesheet_path] = current_gui_data.stylesheet_file;
 
         // Set html filepath of GUI
-        current_gui_data.html_file = current_gui_data.name + ".html";
+        current_gui_data.html_file = sanitize_name(current_gui_data.name) + ".html";
         if (std::filesystem::exists(m_output_directory / current_gui_data.html_file))
-            throw std::runtime_error("Unable to generate source for `" + current_gui_data.html_file + "` as a file already exists with that name");
+            throw std::runtime_error("Unable to generate source for \"" + current_gui_data.html_file + "\" as a file already exists with that name");
 
         // Store debug state of GUI
         current_gui_data.debug = false;
-        if (gui_node["debug"].IsDefined())
+        YAML::Node const debug = gui_node["debug"];
+        if (debug.IsDefined())
         {
             do
             {
-                if (gui_node["debug"].IsScalar())
+                if (debug.IsScalar())
                 {
                     try
                     {
-                        current_gui_data.debug = gui_node["debug"].as<bool>(false);
+                        current_gui_data.debug = debug.as<bool>(false);
                         continue;
                     }
-                    catch (const std::exception &e)
+                    catch (std::exception const &e)
                     {
                     }
                 }
@@ -216,16 +244,17 @@ generation_t::generation_t(std::filesystem::path const &configuration_file, std:
         }
         // Check whether modules are listed
         current_gui_data.module_files = {};
-        if (gui_node["modules"].IsDefined())
+        YAML::Node const modules = gui_node["modules"];
+        if (modules.IsDefined())
         {
             // Expect a list of modules
-            if (gui_node["modules"].IsSequence())
+            if (modules.IsSequence())
             {
                 // Get the directory of the file being processed
-                for (const YAML::Node &dep_node : gui_node["modules"])
+                for (YAML::Node const &dep_node : modules)
                 {
                     if (!dep_node.IsScalar())
-                        throw std::runtime_error("Expected a string path for a module in `" + configuration_file.string() + "`");
+                        throw std::runtime_error("Expected a string path for a module in \"" + configuration_file.string() + "\"");
 
                     // Convert the dependency string to a std::filesystem::path object
                     std::filesystem::path module_path;
@@ -233,9 +262,9 @@ generation_t::generation_t(std::filesystem::path const &configuration_file, std:
                     {
                         module_path = convert_relative_path_to_absolute(dep_node.as<std::string>(), configuration_file);
                     }
-                    catch (const YAML::BadConversion &e)
+                    catch (YAML::BadConversion const &e)
                     {
-                        throw std::runtime_error("Expected a string path for a module in `" + configuration_file.string() + "`");
+                        throw std::runtime_error("Expected a string path for a module in \"" + configuration_file.string() + "\"");
                     }
                     if (std::filesystem::exists(module_path) && std::filesystem::is_regular_file(module_path))
                     {
@@ -244,22 +273,23 @@ generation_t::generation_t(std::filesystem::path const &configuration_file, std:
                         current_gui_data.module_files.push_back(module_path_relative);
                     }
                     else
-                        throw std::runtime_error("No module file exists at `" + module_path.string() + "`");
+                        throw std::runtime_error("No module file exists at \"" + module_path.string() + "\"");
                 }
             }
         }
 
         // Check whether dependencies are listed
-        if (gui_node["dependencies"].IsDefined())
+        YAML::Node const dependencies = gui_node["dependencies"];
+        if (dependencies.IsDefined())
         {
             // Expect a list of dependencies
-            if (gui_node["dependencies"].IsSequence())
+            if (dependencies.IsSequence())
             {
                 // Get the directory of the file being processed
-                for (const YAML::Node &dep_node : gui_node["dependencies"])
+                for (YAML::Node const &dep_node : dependencies)
                 {
                     if (!dep_node.IsScalar())
-                        throw std::runtime_error("Expected a string path for a dependency in `" + configuration_file.string() + "`");
+                        throw std::runtime_error("Expected a string path for a dependency in \"" + configuration_file.string() + "\"");
 
                     // Convert the dependency string to a std::filesystem::path object
                     std::string dependency_path;
@@ -267,22 +297,22 @@ generation_t::generation_t(std::filesystem::path const &configuration_file, std:
                     {
                         dependency_path = convert_relative_path_to_absolute(dep_node.as<std::string>(), configuration_file);
                     }
-                    catch (const YAML::BadConversion &e)
+                    catch (YAML::BadConversion const &e)
                     {
-                        throw std::runtime_error("Expected a string path for a dependency in `" + configuration_file.string() + "`");
+                        throw std::runtime_error("Expected a string path for a dependency in \"" + configuration_file.string() + "\"");
                     }
                     try
                     {
                         for (auto &&dependency : dependencies_t(dependency_path).paths())
                             m_dependencies[dependency.lexically_relative(m_configuration_directory)] = convert_absolute_path_to_relative(dependency, m_configuration_directory);
                     }
-                    catch (const std::exception &e)
+                    catch (std::exception const &e)
                     {
-                        throw std::runtime_error("No file(s) exists for dependency `" + dependency_path + "` within the configuration directory.");
+                        throw std::runtime_error("No file(s) exists for dependency \"" + dependency_path + "\" within the configuration directory.");
                     }
                 }
             }
-            else if (gui_node["dependencies"].Type() != YAML::NodeType::Null)
+            else if (dependencies.Type() != YAML::NodeType::Null)
                 throw std::runtime_error("Unable to parse `dependencies` since a list is expected");
         }
         m_guis.push_back(current_gui_data); // Add to the collection
@@ -310,7 +340,7 @@ void generation_t::generate(generation_t::gui_t const &data, std::string const &
         // Generate structure
         structure = structure_t(data.source_configuration_file, data.name, debug_stream).build(!data.debug);
     }
-    catch (const std::exception &e)
+    catch (std::exception const &e)
     {
         throw std::runtime_error(data.name + ": " + e.what());
     }
@@ -321,7 +351,7 @@ void generation_t::generate(generation_t::gui_t const &data, std::string const &
     std::string const relative_adjustment = [&]
     {
         std::string parent_path;
-        for (auto i = 0; i < name_as_path_depth(data.name); ++i)
+        for (auto i = 0; i < name_as_path_depth(sanitize_name(data.name)); ++i)
             parent_path += "../";
         return parent_path;
     }();
@@ -329,7 +359,7 @@ void generation_t::generate(generation_t::gui_t const &data, std::string const &
     std::vector<std::string>
         modules;
     std::transform(data.module_files.begin(), data.module_files.end(), std::back_inserter(modules),
-                   [relative_adjustment](const std::string &module_file)
+                   [relative_adjustment](std::string const &module_file)
                    {
                        return relative_adjustment + module_file;
                    });
@@ -425,7 +455,7 @@ void generation_t::build_all(bool const disallow_conflicts, bool const flatten_d
                     }
                     else if (generated_file != dependency_destination)
                         continue;
-                    throw std::runtime_error("A dependency of `" + dependency_destination.string() + "` will conflict with an automatically generated file");
+                    throw std::runtime_error("A dependency of \"" + dependency_destination.string() + "\" will conflict with an automatically generated file");
                 }
             }
             bool conflict = false;
@@ -434,19 +464,19 @@ void generation_t::build_all(bool const disallow_conflicts, bool const flatten_d
             else
                 conflict = std::filesystem::exists(m_output_directory / dependency_destination);
             if (conflict)
-                throw std::runtime_error("A dependency of `" + dependency_source.string() + "` will conflict with an already existing file");
+                throw std::runtime_error("A dependency of \"" + dependency_source.string() + "\" will conflict with an already existing file");
         }
         if (flatten_dependency_references)
         {
             // Sort dependency filenames for faster finding...
-            std::sort(dependency_filenames.begin(), dependency_filenames.end(), [](const std::filesystem::path &a, const std::filesystem::path &b)
+            std::sort(dependency_filenames.begin(), dependency_filenames.end(), [](std::filesystem::path const &a, std::filesystem::path const &b)
                       { return a.filename().string() < b.filename().string(); });
 
             // Check if output dependencies will conflict with each other when filenames are flattened
-            auto duplicate = std::adjacent_find(dependency_filenames.begin(), dependency_filenames.end(), [](const std::filesystem::path &a, const std::filesystem::path &b)
+            auto duplicate = std::adjacent_find(dependency_filenames.begin(), dependency_filenames.end(), [](std::filesystem::path const &a, std::filesystem::path const &b)
                                                 { return a.filename().string() == b.filename().string(); });
             if (duplicate != dependency_filenames.end())
-                throw std::runtime_error("Conflicting filename of `" + duplicate->filename().string() + "` between flattened dependencies");
+                throw std::runtime_error("Conflicting filename of \"" + duplicate->filename().string() + "\" between flattened dependencies");
             // Flatten output stylesheet and module paths
             for (auto &&gui : m_guis)
             {
@@ -462,7 +492,7 @@ void generation_t::build_all(bool const disallow_conflicts, bool const flatten_d
         for (auto &dependency : m_dependencies)
             dependencies_keys.push_back(dependency.first);
 
-        std::vector<std::filesystem::path> dependenciesAllowed = removeDescendantPaths(dependencies_keys);
+        std::vector<std::filesystem::path> dependenciesAllowed = remove_descendant_paths(dependencies_keys);
         std::vector<std::filesystem::path> dependenciesDisallowed = {};
         for (auto &&dependency : m_dependencies)
         {
@@ -483,7 +513,7 @@ void generation_t::build_all(bool const disallow_conflicts, bool const flatten_d
 
     // Parallel processing loop
     std::vector<std::future<void>> futures;
-    for (const auto &gui_data : m_guis)
+    for (auto const &gui_data : m_guis)
         futures.push_back(std::async(std::launch::async, [this, gui_data, guis_js_filename, debug_stream]()
                                      { generate(gui_data, guis_js_filename, debug_stream); })); // Launch asynchronously
 

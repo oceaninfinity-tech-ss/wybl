@@ -40,7 +40,7 @@ namespace
     std::filesystem::path const get_starting_directory_from_wildcard_path(std::filesystem::path const &wildcard_path)
     {
         std::filesystem::path current_directory;
-        for (const auto &component : wildcard_path)
+        for (auto const &component : wildcard_path)
         {
             if (component.string().find_first_of("*?") != std::string::npos)
                 break; // Found a wildcard component, the current_directory is the starting directory
@@ -70,14 +70,14 @@ std::vector<std::filesystem::path> dependencies_t::paths()
     std::filesystem::path const start_directory = get_starting_directory_from_wildcard_path(m_path);
     try
     {
-        for (const auto &entry : std::filesystem::recursive_directory_iterator(start_directory))
+        for (auto const &entry : std::filesystem::recursive_directory_iterator(start_directory))
         {
             std::filesystem::path relative_entry_path = std::filesystem::relative(entry.path(), start_directory);
             if (std::regex_match((start_directory / relative_entry_path).string(), path_regex) && std::filesystem::is_regular_file(entry.path()))
                     existing_paths.push_back(entry.path());
         }
     }
-    catch (const std::filesystem::filesystem_error &e)
+    catch (std::filesystem::filesystem_error const &e)
     {
         throw std::runtime_error("Failed to load dependency path");
     }
