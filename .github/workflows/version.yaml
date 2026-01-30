@@ -1,0 +1,30 @@
+name: Verify version has incremented
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify version has incremented
+        run: |
+          NEW=$(grep -i "project(" CMakeLists.txt | grep -oP '(?<=VERSION )[\d.]+' | tr -d '\r\n ')
+          git checkout origin/main -- CMakeLists.txt
+          OLD=$(grep -i "project(" CMakeLists.txt | grep -oP '(?<=VERSION )[\d.]+' | tr -d '\r\n ')
+          echo "Comparing $NEW to $OLD..."
+          if [ "$NEW" = "$OLD" ]; then
+            echo "::error::Version has not changed from v$NEW. Please increment CMakeLists.txt."
+            exit 1
+          fi
+          LATEST=$(printf "%s\n%s" "$OLD" "$NEW" | sort -V | tail -n1)
+          if [ "$LATEST" = "$NEW" ]; then
+            echo "v$NEW is greater than v$OLD"
+          else
+            echo "::error::Version regression! v$NEW is lower than v$OLD."
+            exit 1
+          fi
