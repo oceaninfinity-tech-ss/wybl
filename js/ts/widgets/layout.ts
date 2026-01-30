@@ -77,13 +77,25 @@ export class layout_t extends widget_t {
             }
             return (row.toString() + "fr");
         }).join(" ");
+        const gapStyle: string = (() => {
+            if (this.configurationHas(configuration, "gap")) {
+                const gap: any = (configuration as any).gap;
+                if (typeof gap !== "boolean") {
+                    throw new Error("A layout has a `gap` property but is not a boolean value");
+                }
+                if (gap === false) {
+                    return "gap:0!important;grid-gap:0!important;";
+                }
+            }
+            return "";
+        })();
         // Fill the remaining cells...
         for (let i = this.children.length; i < maxItems; i++) {
             this.children.push(new void_t());
         }
         const layoutShadowRoot: ShadowRoot = this.content.attachShadow({ mode: "closed" });
         const noInheritedStyling: CSSStyleSheet = new CSSStyleSheet();
-        noInheritedStyling.replaceSync(`:host{display:grid!important;grid-template-columns:${columnsStyle}!important;grid-template-rows:${rowsStyle}!important;}`);
+        noInheritedStyling.replaceSync(`:host{display:grid!important;grid-template-columns:${columnsStyle}!important;grid-template-rows:${rowsStyle}!important;${gapStyle}}`);
         layoutShadowRoot.adoptedStyleSheets = [noInheritedStyling];
         const slot = document.createElement("slot");
         layoutShadowRoot.appendChild(slot);
