@@ -27,6 +27,7 @@ namespace
         return std::all_of(string.begin(), string.end(), [](unsigned char character)
                            { return std::isspace(character); });
     }
+
     /**
      * @brief Checks if a filepath is a descendant of another filepath
      * @param parent Filepath
@@ -35,23 +36,9 @@ namespace
      */
     bool is_descendant(std::filesystem::path const &parent, std::filesystem::path const &child)
     {
-        // If paths are identical, child is not a descendant of itself
-        if (parent == child)
-            return false;
-
-        auto parent_it = parent.begin();
-        auto child_it = child.begin();
-
-        // Iterate through path components
-        while (parent_it != parent.end() && child_it != child.end())
-        {
-            if (*parent_it != *child_it)
-                return false; // Components don't match, not a descendant
-            ++parent_it;
-            ++child_it;
-        }
-        // If the parent iterator has reached its end but the child iterator has not
-        return (parent_it == parent.end() && child_it != child.end());
+        auto const [parent_iterator, child_iterator] = std::mismatch(parent.begin(), parent.end(), child.begin(), child.end());
+        // Descendant if we exhausted parent but NOT child
+        return (parent_iterator == parent.end() && child_iterator != child.end());
     }
 
     /**
@@ -106,7 +93,14 @@ namespace
      */
     std::filesystem::path convert_absolute_path_to_relative(std::filesystem::path const &target_path, std::filesystem::path const &base_path)
     {
-        return std::filesystem::relative(std::filesystem::absolute(target_path), base_path);
+        std::filesystem::path filepath;
+        for (auto const &directory : std::filesystem::relative(std::filesystem::absolute(target_path), base_path))
+        {
+            if (directory == ".." || directory == ".")
+                continue;
+            filepath /= directory; // Join remaining parts
+        }
+        return filepath;
     }
 
     /**
@@ -214,7 +208,7 @@ generation_t::generation_t(std::filesystem::path const &configuration_file, std:
         if (!std::filesystem::exists(stylesheet_path.string()))
             throw std::runtime_error("Unable to find the stylesheet \"" + current_gui_data.stylesheet_file + "\"");
         current_gui_data.stylesheet_file = convert_absolute_path_to_relative(stylesheet_path, m_configuration_directory);
-        m_dependencies[stylesheet_path] = current_gui_data.stylesheet_file;
+        m_dependencies[std::filesystem::weakly_canonical(stylesheet_path)] = current_gui_data.stylesheet_file;
 
         // Set html filepath of GUI
         current_gui_data.html_file = sanitize_name(current_gui_data.name) + ".html";
@@ -269,7 +263,7 @@ generation_t::generation_t(std::filesystem::path const &configuration_file, std:
                     if (std::filesystem::exists(module_path) && std::filesystem::is_regular_file(module_path))
                     {
                         std::filesystem::path module_path_relative = convert_absolute_path_to_relative(module_path, m_configuration_directory);
-                        m_dependencies[module_path.lexically_relative(m_configuration_directory)] = module_path_relative;
+                        m_dependencies[std::filesystem::weakly_canonical(module_path.lexically_relative(m_configuration_directory))] = module_path_relative;
                         current_gui_data.module_files.push_back(module_path_relative);
                     }
                     else
@@ -304,7 +298,7 @@ generation_t::generation_t(std::filesystem::path const &configuration_file, std:
                     try
                     {
                         for (auto &&dependency : dependencies_t(dependency_path).paths())
-                            m_dependencies[dependency.lexically_relative(m_configuration_directory)] = convert_absolute_path_to_relative(dependency, m_configuration_directory);
+                            m_dependencies[std::filesystem::weakly_canonical(dependency.lexically_relative(m_configuration_directory))] = convert_absolute_path_to_relative(dependency, m_configuration_directory);
                     }
                     catch (std::exception const &e)
                     {
