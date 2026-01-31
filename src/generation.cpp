@@ -170,7 +170,7 @@ generation_t::generation_t(std::filesystem::path const &configuration_file, std:
     }
     for (YAML::Node const &gui_node : gui_nodes)
     {
-        gui_t current_gui_data;
+        gui_t current_gui_data = {};
 
         // Check whether core configuration strings are present
         for (std::string const field : {"name", "config", "stylesheet"})
@@ -403,7 +403,7 @@ std::filesystem::path generation_t::unique_filename(std::string const &extension
         std::string filename = std::to_string(std::rand()) + '.' + extension;
         bool unique = true;
         // Check against dependencies
-        for (auto &&dependency : m_dependencies)
+        for (auto const &dependency : m_dependencies)
         {
             if (filename == dependency.second.filename())
             {
@@ -412,7 +412,7 @@ std::filesystem::path generation_t::unique_filename(std::string const &extension
             }
         }
         // Check against stylesheets
-        for (auto &&gui : m_guis)
+        for (auto const &gui : m_guis)
         {
             if (filename == std::filesystem::path(gui.stylesheet_file).filename())
             {
@@ -483,17 +483,17 @@ void generation_t::build_all(bool const disallow_conflicts, bool const flatten_d
 
     { // Remove sub dependencies
         std::vector<std::filesystem::path> dependencies_keys = {};
-        for (auto &dependency : m_dependencies)
+        for (auto const &dependency : m_dependencies)
             dependencies_keys.push_back(dependency.first);
 
         std::vector<std::filesystem::path> dependenciesAllowed = remove_descendant_paths(dependencies_keys);
         std::vector<std::filesystem::path> dependenciesDisallowed = {};
-        for (auto &&dependency : m_dependencies)
+        for (auto const &dependency : m_dependencies)
         {
             if (std::find(dependenciesAllowed.begin(), dependenciesAllowed.end(), dependency.first) == dependenciesAllowed.end())
                 dependenciesDisallowed.push_back(dependency.first);
         }
-        for (auto &disallowedDependency : dependenciesDisallowed)
+        for (auto const &disallowedDependency : dependenciesDisallowed)
             m_dependencies.erase(disallowedDependency);
     }
 

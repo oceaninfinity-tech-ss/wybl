@@ -248,7 +248,7 @@ void structure_t::add_widget(widget_name_t const &name, widget_type_t const &typ
         throw std::runtime_error("Failed to parse widget with the YAML definition of `None`");
 
     int type_id = -1;
-    auto it = std::find(m_widget_types.begin(), m_widget_types.end(), type);
+    auto const it = std::find(m_widget_types.begin(), m_widget_types.end(), type);
     if (it != m_widget_types.end())
         type_id = std::distance(m_widget_types.begin(), it);
     else
@@ -405,7 +405,7 @@ void structure_t::number_references()
                 {
                     throw std::runtime_error("Child object reference to a non-descriptive object string type");
                 }
-                auto widget_it = m_widgets.find(object_name);
+                auto const widget_it = m_widgets.find(object_name);
                 if (widget_it != m_widgets.end())
                 {
                     current_node[key] = std::distance(m_widgets.begin(), widget_it); // Get the index
@@ -433,7 +433,7 @@ std::string structure_t::build(bool const numeric_references)
         number_references();
 
     int main = -1;
-    auto it = m_widgets.find("main");
+    auto const it = m_widgets.find("main");
     if (it != m_widgets.end())
     {
         if (numeric_references)
