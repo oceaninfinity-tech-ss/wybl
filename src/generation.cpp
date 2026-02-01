@@ -471,13 +471,17 @@ void generation_t::build_all(bool const disallow_conflicts, bool const flatten_d
                                                 { return a.filename().string() == b.filename().string(); });
             if (duplicate != dependency_filenames.end())
                 throw std::runtime_error("Conflicting filename of \"" + duplicate->filename().string() + "\" between flattened dependencies");
-            // Flatten output stylesheet and module paths
-            for (auto &&gui : m_guis)
-            {
-                gui.stylesheet_file = std::filesystem::path(gui.stylesheet_file).filename().string();
-                for (auto &&module_file : gui.module_files)
-                    module_file = std::filesystem::path(module_file).filename().string();
-            }
+        }
+    }
+
+    if (flatten_dependency_references)
+    {
+        // Flatten output stylesheet and module paths
+        for (auto &&gui : m_guis)
+        {
+            gui.stylesheet_file = std::filesystem::path(gui.stylesheet_file).filename().string();
+            for (auto &&module_file : gui.module_files)
+                module_file = std::filesystem::path(module_file).filename().string();
         }
     }
 
