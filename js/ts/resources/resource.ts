@@ -29,7 +29,13 @@ export function loadResource(url: string): Promise<multimediaResource_t> {
         return resources[url];
     }
     let blob: Promise<multimediaResource_t> = new Promise<multimediaResource_t>((resolve, reject) => {
+        const failure = (): void => {
+            reject(`Failed to load multimedia resource: ${url}`);
+        }
         fetch(url).then(async (response) => {
+            if (!response.ok) {
+                failure();
+            }
             const blob: Blob = await response.blob();
             const resource: multimediaResource_t = {
                 blobUrl: URL.createObjectURL(blob),
@@ -39,9 +45,7 @@ export function loadResource(url: string): Promise<multimediaResource_t> {
                 URL.revokeObjectURL(resource.blobUrl);
             });
             resolve(resource);
-        }).catch(() => {
-            reject(`Failed to load multimedia resource: ${url}`);
-        });
+        }).catch(() => failure());
     });
     resources[url] = blob;
     return blob;

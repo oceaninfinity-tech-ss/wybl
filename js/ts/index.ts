@@ -10,7 +10,7 @@ import { exportToWindow } from "./exported";
 import { loadModule, loadModules } from "./resources/module";
 
 // @internal
-function main(): Promise<void> {
+async function main(): Promise<void> {
     // Splash screen
     const splashContainer: HTMLBodyElement = document.createElement("body");
     const splashShadowRoot: ShadowRoot = splashContainer.attachShadow({ "mode": "closed" });
@@ -32,14 +32,13 @@ function main(): Promise<void> {
     document.body.replaceWith(splashContainer);
     exportToWindow();
     registerCoreWidgets();
-    return new Promise<void>(async (resolve, reject) => {
+    await new Promise<void>(async (resolve, reject) => {
         // Load GUI
         let gui_data: (gui_t | null) = null;
         try {
             gui_data = new gui_t();
         } catch (error: any) {
-            setError(error as string);
-            reject();
+            reject(error);
         }
         try {
             // Start loading stylesheet
@@ -63,15 +62,15 @@ function main(): Promise<void> {
                         document.dispatchEvent(new Event("load"));
                         resolve();
                     }).catch((error) => {
-                        setError(error);
-                        reject();
+                        reject(error);
                     });
                 }
             })
         } catch (error: any) {
-            setError(error as string);
-            reject();
+            reject(error);
         }
+    }).catch((error: any) => {
+        setError(error as string);
     });
 }
 
