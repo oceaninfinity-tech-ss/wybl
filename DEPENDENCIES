@@ -1,0 +1,7 @@
+cmake
+g++
+libyaml-cpp-dev
+nlohmann-json3-dev
+nodejs
+npm
+xxd
