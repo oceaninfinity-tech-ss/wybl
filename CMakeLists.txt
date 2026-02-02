@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 
 set(PROJECT_NAME sss-guis)
 
-project(${PROJECT_NAME} LANGUAGES CXX VERSION 0.6.0)
+project(${PROJECT_NAME} LANGUAGES CXX VERSION 0.6.1)
 
 set(EXECUTABLE_NAME ${PROJECT_NAME}_executable)
 set(LIBRARY_NAME ${PROJECT_NAME}_library)
@@ -14,11 +14,11 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 
 find_package(yaml-cpp REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(Threads REQUIRED)
 
 add_subdirectory(js EXCLUDE_FROM_ALL)
-if(NOT(PROJECT_IS_TOP_LEVEL))
-    set(SSS_GUIS_DECLARATION_HEADER ${SSS-GUIS-DECLARATION-HEADER} PARENT_SCOPE)
-endif()
+
+set(SSS_GUIS_DECLARATION_HEADER ${SSS-GUIS-DECLARATION-HEADER} CACHE INTERNAL "")
 
 set(SOURCES src/dependencies.cpp
             src/generation.cpp
@@ -56,9 +56,12 @@ endif()
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
                                            PRIVATE ${SSS-GUIS-JS-HEADER})
 
-target_link_libraries(${LIBRARY_NAME} PRIVATE yaml-cpp
+target_link_libraries(${LIBRARY_NAME} PRIVATE Threads::Threads
+                                              yaml-cpp::yaml-cpp
                                               nlohmann_json::nlohmann_json
                                               sss-guis-js)
+
+target_compile_features(${LIBRARY_NAME} PUBLIC cxx_std_17)
 
 target_compile_options(${LIBRARY_NAME} PRIVATE -Wall
                                                -Wextra
