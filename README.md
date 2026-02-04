@@ -1,4 +1,4 @@
-# SSS GUIS
+# wybl - WebUI as YAML blocks
 An extensible YAML to graphical web application system.
 
 ---
